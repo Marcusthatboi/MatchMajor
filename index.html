@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MatchMajor</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #f5f7f6;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 60px;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.logo {
+    font-size: 22px;
+    font-weight: bold;
+    color: #2f6f63;
+}
+
+nav a {
+    margin: 0 15px;
+    text-decoration: none;
+    color: #333;
+}
+
+.btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: #2f6f63;
+    color: white;
+}
+
+.hero {
+    display: flex;
+    justify-content: space-between;
+    padding: 60px;
+    align-items: center;
+}
+
+.hero-text h1 {
+    font-size: 42px;
+    margin-bottom: 15px;
+}
+
+.hero-text p {
+    margin-bottom: 25px;
+    color: #555;
+}
+
+.hero-buttons button {
+    margin-right: 15px;
+}
+
+.dashboard {
+    display: flex;
+    padding: 40px 60px;
+}
+
+.sidebar {
+    width: 220px;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-right: 30px;
+}
+
+.sidebar ul {
+    list-style: none;
+}
+
+.sidebar li {
+    margin: 15px 0;
+    cursor: pointer;
+}
+
+.content {
+    flex: 1;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.match {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.match-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.percentage {
+    font-weight: bold;
+    color: #2f6f63;
+}
+
+.study-group button {
+    margin-top: 10px;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    margin-top: 40px;
+    background: white;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">MatchMajor</div>
+    <nav>
+        <a href="#">About</a>
+        <a href="#">How It Works</a>
+        <a href="#">Login</a>
+        <button class="btn btn-primary">Sign Up</button>
+    </nav>
+</header>
+
+<section class="hero">
+    <div class="hero-text">
+        <h1>Find Your Major Match.</h1>
+        <p>Connect with students who share your academic interests, career goals, and lifestyle.</p>
+        <div class="hero-buttons">
+            <button class="btn btn-primary">Find Study Groups</button>
+            <button class="btn">Find Roommates</button>
+        </div>
+    </div>
+</section>
+
+<section class="dashboard">
+    
+    <div class="sidebar">
+        <ul>
+            <li><strong>Dashboard</strong></li>
+            <li>My Matches</li>
+            <li>Study Groups</li>
+            <li>Roommate Finder</li>
+            <li>Settings</li>
+            <li>Logout</li>
+        </ul>
+    </div>
+
+    <div class="content">
+
+        <div class="card">
+            <h2>Match Suggestions</h2>
+        </div>
+
+            <div class="card">
+                <strong>Sarah L.<br></strong>
+                <span>Pre-Med, Sophomore</span>
+            </div>
+            
+            <div class="card">
+                <strong>John C.<br></strong>
+                <span>Computer Science, Senior</span>
+            </div>
+
+            <div class="card">
+                <strong>Joe M.<br></strong>
+                <span>Engineering, Junior</span>
+            </div>

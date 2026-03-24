@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MatchMajor – Study Together</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&family=Poppins:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cyan: #00aabb;
+      --cyan-dark: #2f6f63;
+      --cyan-light: #b2f0f5;
+      --gold: #f9c846;
+      --text-dark: #000000;
+      --text-mid: #2c4a5a;
+      --white: #ffffff;
+      --bg: #f0fafb;
+      --match-badge-bg: linear-gradient(135deg, #c8f7fb 0%, #e0f9fc 100%);
+      --shadow: 0 8px 32px rgba(0,180,200,0.13);
+      --shadow-card: 0 6px 24px rgba(0,160,180,0.18);
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: var(--text-dark);
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--white);
+      padding: 0 2rem;
+      height: 60px;
+      box-shadow: 0 2px 12px rgba(0,180,200,0.10);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 900;
+      font-size: 1.2rem;
+      color: var(--cyan-dark);
+      text-decoration: none;
+    }
+    .nav-brand .plus-icon {
+      width: 34px; height: 34px;
+      background: var(--cyan-dark);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: white;
+      font-size: 1.4rem;
+      font-weight: 900;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+    .btn-dashboard {
+      background: var(--gold);
+      color: var(--text-dark);
+      border: none;
+      border-radius: 20px;
+      padding: 0.4rem 1.2rem;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: filter 0.15s;
+    }
+    .btn-dashboard:hover { filter: brightness(1.08); }
+    .avatar-icon {
+      width: 36px; height: 36px;
+      background: var(--text-dark);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+    }
+    .avatar-icon svg { width: 20px; height: 20px; fill: white; }
+
+    /* ── MAIN ── */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+    h1 {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 900;
+      font-size: clamp(2rem, 5vw, 3rem);
+      text-align: center;
+      color: var(--text-dark);
+      margin-bottom: 2.5rem;
+      letter-spacing: -0.5px;
+    }
+
+    /* ── FILTERS ── */
+    .filters {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 2.5rem;
+      align-items: flex-start;
+    }
+
+    /* ── DROPDOWN CHIP ── */
+    .dropdown-wrap { position: relative; }
+
+    .filter-chip {
+      background: white;
+      border: 2px solid var(--cyan);
+      color: var(--text-dark);
+      border-radius: 20px;
+      padding: 0.3rem 0.9rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      white-space: nowrap;
+      font-family: 'Poppins', sans-serif;
+      user-select: none;
+    }
+    .filter-chip .arrow {
+      font-size: 0.65rem;
+      transition: transform 0.2s;
+      display: inline-block;
+      margin-left: 2px;
+    }
+    .filter-chip:hover { background: var(--cyan-light); }
+    .filter-chip.active,
+    .dropdown-wrap.open .filter-chip {
+      background: var(--cyan);
+      color: white;
+      border-color: var(--cyan-dark);
+    }
+    .dropdown-wrap.open .filter-chip .arrow { transform: rotate(180deg); }
+
+    /* Dot indicator when a non-default filter is active */
+    .chip-dot {
+      width: 7px; height: 7px;
+      background: white;
+      border-radius: 50%;
+      display: none;
+      flex-shrink: 0;
+    }
+    .filter-chip.active .chip-dot { display: inline-block; }
+
+    /* Dropdown panel */
+    .dropdown-panel {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      background: white;
+      border: 2px solid var(--cyan);
+      border-radius: 14px;
+      padding: 0.4rem 0;
+      min-width: 185px;
+      box-shadow: 0 8px 24px rgba(0,180,200,0.18);
+      z-index: 200;
+      display: none;
+    }
+    .dropdown-wrap.open .dropdown-panel {
+      display: block;
+      animation: dropIn 0.15s ease both;
+    }
+    @keyframes dropIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .dropdown-option {
+      padding: 0.45rem 1rem;
+      font-size: 0.84rem;
+      font-weight: 500;
+      cursor: pointer;
+      color: var(--text-dark);
+      transition: background 0.12s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .dropdown-option:hover { background: var(--cyan-light); }
+    .dropdown-option.selected { font-weight: 700; color: var(--cyan-dark); }
+    .dropdown-option .check {
+      font-size: 0.75rem;
+      color: var(--cyan-dark);
+      width: 14px;
+      flex-shrink: 0;
+    }
+
+    /* ── GRID ── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 2rem;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--cyan-light);
+      border: 3px solid var(--cyan-dark);
+      padding: 1.4rem 1.4rem 2.8rem;
+      border-radius: 20px;
+      position: relative;
+      box-shadow: var(--shadow-card);
+      transition: transform 0.2s, box-shadow 0.2s;
+      animation: fadeUp 0.4s ease both;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 16px 40px rgba(0,160,180,0.28);
+    }
+    .card.hidden { display: none; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .card:nth-child(1) { animation-delay: 0.05s; }
+    .card:nth-child(2) { animation-delay: 0.10s; }
+    .card:nth-child(3) { animation-delay: 0.15s; }
+    .card:nth-child(4) { animation-delay: 0.20s; }
+    .card:nth-child(5) { animation-delay: 0.25s; }
+    .card:nth-child(6) { animation-delay: 0.30s; }
+
+    .card-title {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 900;
+      font-size: 1.15rem;
+      color: var(--text-dark);
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .card-info {
+      font-size: 0.88rem;
+      color: var(--text-dark);
+      line-height: 2;
+      margin-bottom: 1.1rem;
+    }
+    .seats-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.6rem;
+    }
+    .seat-icon {
+      width: 34px; height: 34px;
+      background: var(--text-dark);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .seat-icon svg { width: 18px; height: 18px; fill: white; }
+    .seats-label {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 900;
+      font-size: 1rem;
+      color: var(--text-dark);
+      margin-left: 0.25rem;
+    }
+    .members-row {
+      display: flex;
+      gap: 0.4rem;
+      margin-top: 0.4rem;
+    }
+    .member-icon {
+      width: 34px; height: 34px;
+      background: var(--text-dark);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .member-icon svg { width: 18px; height: 18px; fill: white; }
+
+    .match-badge {
+      position: absolute;
+      bottom: -14px;
+      right: 16px;
+      width: 54px; height: 54px;
+      background: var(--match-badge-bg);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 900;
+      font-size: 0.95rem;
+      color: var(--text-mid);
+      box-shadow: 0 4px 14px rgba(0,180,200,0.20);
+      border: 2px solid rgba(255,255,255,0.7);
+    }
+
+    .no-results {
+      text-align: center;
+      color: var(--text-mid);
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+      grid-column: 1 / -1;
+      padding: 3rem 0;
+      display: none;
+    }
+
+    @media (max-width: 600px) {
+      .cards-grid { grid-template-columns: 1fr; }
+      h1 { font-size: 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="#" class="nav-brand">
+      <span class="plus-icon">+</span>
+      MatchMajor
+    </a>
+    <div class="nav-right">
+      <button class="btn-dashboard">Dashboard</button>
+      <div class="avatar-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <h1>Study Together</h1>
+
+    <div class="filters">
+
+      <!-- Studying dropdown -->
+      <div class="dropdown-wrap" id="wrap-studying">
+        <button class="filter-chip" id="chip-studying">
+          <span class="chip-dot"></span>Studying <span class="arrow">▼</span>
+        </button>
+        <div class="dropdown-panel">
+          <div class="dropdown-option selected" data-filter="studying" data-value="all" data-label="Studying"><span class="check">✓</span>All Courses</div>
+          <div class="dropdown-option" data-filter="studying" data-value="Data Structures 101" data-label="Data Structures 101"><span class="check"></span>Data Structures 101</div>
+          <div class="dropdown-option" data-filter="studying" data-value="Marketing 101" data-label="Marketing 101"><span class="check"></span>Marketing 101</div>
+          <div class="dropdown-option" data-filter="studying" data-value="Calculus II" data-label="Calculus II"><span class="check"></span>Calculus II</div>
+          <div class="dropdown-option" data-filter="studying" data-value="English Composition" data-label="English Composition"><span class="check"></span>English Composition</div>
+        </div>
+      </div>
+
+      <!-- Major dropdown -->
+      <div class="dropdown-wrap" id="wrap-major">
+        <button class="filter-chip" id="chip-major">
+          <span class="chip-dot"></span>Major <span class="arrow">▼</span>
+        </button>
+        <div class="dropdown-panel">
+          <div class="dropdown-option selected" data-filter="major" data-value="all" data-label="Major"><span class="check">✓</span>All Majors</div>
+          <div class="dropdown-option" data-filter="major" data-value="Any" data-label="Any Major"><span class="check"></span>Any</div>
+          <div class="dropdown-option" data-filter="major" data-value="Business" data-label="Business"><span class="check"></span>Business</div>
+          <div class="dropdown-option" data-filter="major" data-value="STEM" data-label="STEM"><span class="check"></span>STEM</div>
+        </div>
+      </div>
+
+      <!-- Open Seats dropdown -->
+      <div class="dropdown-wrap" id="wrap-seats">
+        <button class="filter-chip" id="chip-seats">
+          <span class="chip-dot"></span>Open Seats <span class="arrow">▼</span>
+        </button>
+        <div class="dropdown-panel">
+          <div class="dropdown-option selected" data-filter="seats" data-value="all" data-label="Open Seats"><span class="check">✓</span>Any Available</div>
+          <div class="dropdown-option" data-filter="seats" data-value="1" data-label="1+ Seats"><span class="check"></span>1+ Open</div>
+          <div class="dropdown-option" data-filter="seats" data-value="2" data-label="2+ Seats"><span class="check"></span>2+ Open</div>
+          <div class="dropdown-option" data-filter="seats" data-value="3" data-label="3+ Seats"><span class="check"></span>3+ Open</div>
+        </div>
+      </div>
+
+      <!-- Environment dropdown -->
+      <div class="dropdown-wrap" id="wrap-environment">
+        <button class="filter-chip" id="chip-environment">
+          <span class="chip-dot"></span>Environment <span class="arrow">▼</span>
+        </button>
+        <div class="dropdown-panel">
+          <div class="dropdown-option selected" data-filter="environment" data-value="all" data-label="Environment"><span class="check">✓</span>All Environments</div>
+          <div class="dropdown-option" data-filter="environment" data-value="Quiet" data-label="Quiet"><span class="check"></span>Quiet</div>
+          <div class="dropdown-option" data-filter="environment" data-value="Social" data-label="Social"><span class="check"></span>Social</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Cards Grid -->
+    <div class="cards-grid">
+
+      <!-- Future plan:
+        for x items in database:
+          print(card template with data)
+      -->
+
+      <!-- Card 1 -->
+      <div class="card">
+        <p class="card-title">Jack's Study Group</p>
+        <div class="card-info">
+          <div>Studying: Data Structures 101</div>
+          <div>Majors: Any</div>
+          <div>Location: Library Room 2B</div>
+          <div>Environment: Quiet</div>
+        </div>
+        <div class="seats-row">
+          <div class="seat-icon open">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+          </div>
+          <div class="seat-icon open">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+          </div>
+          <span class="seats-label">2 Open Seats</span>
+        </div>
+        <div class="members-row">
+          <div class="member-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+          </div>
+          <div class="member-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+          </div>
+        </div>
+        <div class="match-badge">82%</div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="card">
+        <p class="card-title">Sam's Study Group</p>
+        <div class="card-info">
+          <div>Studying: Marketing 101</div>
+          <div>Majors: Business</div>
+          <div>Location: Business Hall 221</div>
+          <div>Environment: Social</div>
+        </div>
+        <div class="seats-row">
+          <div class="seat-icon open">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+          </div>
+          <div class="seat-icon open">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+          </div>
+          <span class="seats-label">2 Open Seats</span>
+        </div>
+        <div class="members-row">
+          <div class="member-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+          </div>
+          <div class="member-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+          </div>
+        </div>
+        <div class="match-badge">50%</div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="card">
+        <p class="card-title">Study Group</p>
+        <div class="card-info">
+          <div>Studying: Data Structures 101</div>
+          <div>Majors: Any</div>
+          <div>Location: Library Room 2B</div>
+          <div>Environment: Quiet</div>
+        </div>
+        <div class="seats-row">
+          <div class="seat-icon open">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+          </div>
+          <span class="seats-label">1 Open Seat</span>
+        </div>
+        <div class="members-row">
+          <div class="member-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+          </div>
+          <div class="member-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+          </div>
+        </div>
+        <div class="match-badge">71%</div>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="card">
+        <p class="card-title">Study Group</p>
+        <div class="card-info">
+          <div>Studying: Data Structures 101</div>
+          <div>Majors: Any</div>
+          <div>Location: Library Room 2B</div>
+          <div>Environment: Quiet</div>
+        </div>
+        <div class="seats-row">
+          <div class="seat-icon open">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+          </div>
+          <div class="member-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+          </div>
+          <span class="seats-label">1 Open Seat</span>
+        </div>
+        <div class="match-badge">71%</div>
+      </div>
+
+      <!-- Card 5 -->
+      <div class="card">
+        <p class="card-title">Study Group</p>
+        <div class="card-info">
+          <div>Studying: Calculus II</div>
+          <div>Majors: STEM</div>
+          <div>Location: Science Building 104</div>
+          <div>Environment: Quiet</div>
+        </div>
+        <div class="seats-row">
+          <div class="seat-icon open">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+          </div>
+          <div class="member-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+          </div>
+          <span class="seats-label">1 Open Seat</span>
+        </div>
+        <div class="members-row">
+          <div class="member-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+          </div>
+          <div class="member-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+          </div>
+        </div>
+        <div class="match-badge">65%</div>
+      </div>
+
+      <!-- Card 6 -->
+      <div class="card">
+        <p class="card-title">Study Group</p>
+        <div class="card-info">
+          <div>Studying: English Composition</div>
+          <div>Majors: Any</div>
+          <div>Location: Online / Zoom</div>
+          <div>Environment: Social</div>
+        </div>
+        <div class="seats-row">
+          <div class="seat-icon open">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+          </div>
+          <div class="seat-icon open">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+          </div>
+          <div class="seat-icon open">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+          </div>
+          <span class="seats-label">3 Open Seats</span>
+        </div>
+        <div class="members-row">
+          <div class="member-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+          </div>
+          <div class="member-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+          </div>
+          <div class="member-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+          </div>
+        </div>
+        <div class="match-badge">58%</div>
+      </div>
+
+    </div><!-- /cards-grid -->
+
+      <div class="no-results" id="no-results">No study groups match your filters.</div>
+
+    </div>
+  </main>
+
+  <script>
+    const activeFilters = { studying: 'all', major: 'all', seats: 'all', environment: 'all' };
+
+    // Populate data attributes on each card so filters can compare reliably
+    document.querySelectorAll('.cards-grid .card').forEach(card => {
+      const info = card.querySelector('.card-info');
+      const text = info ? info.textContent || '' : '';
+
+      const mStudying = text.match(/Studying:\s*(.+)/i);
+      const mMajor = text.match(/Majors?:\s*(.+)/i);
+      const mEnv = text.match(/Environment:\s*(.+)/i);
+
+      card.dataset.studying = mStudying ? mStudying[1].trim() : 'all';
+      card.dataset.major = mMajor ? mMajor[1].trim() : 'all';
+      card.dataset.environment = mEnv ? mEnv[1].trim() : 'all';
+
+      // derive seats from number of `.seat-icon.open` elements (more robust than parsing label)
+      const seatCount = card.querySelectorAll('.seat-icon.open').length;
+      card.dataset.seats = String(seatCount);
+    });
+
+    // Toggle open/close
+    document.querySelectorAll('.dropdown-wrap').forEach(wrap => {
+      wrap.querySelector('.filter-chip').addEventListener('click', e => {
+        e.stopPropagation();
+        const isOpen = wrap.classList.contains('open');
+        document.querySelectorAll('.dropdown-wrap').forEach(w => w.classList.remove('open'));
+        if (!isOpen) wrap.classList.add('open');
+      });
+    });
+
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.dropdown-wrap').forEach(w => w.classList.remove('open'));
+    });
+
+    // Option selection
+    document.querySelectorAll('.dropdown-option').forEach(opt => {
+      opt.addEventListener('click', e => {
+        e.stopPropagation();
+        const filter = opt.dataset.filter;
+        const value = opt.dataset.value;
+        const label = opt.dataset.label;
+
+        activeFilters[filter] = value;
+
+        // Update checkmarks
+        opt.closest('.dropdown-panel').querySelectorAll('.dropdown-option').forEach(o => {
+          o.classList.remove('selected');
+          o.querySelector('.check').textContent = '';
+        });
+        opt.classList.add('selected');
+        opt.querySelector('.check').textContent = '✓';
+
+        // Update chip text & active state
+        const chip = opt.closest('.dropdown-wrap').querySelector('.filter-chip');
+        chip.innerHTML = `<span class="chip-dot"></span>${label} <span class="arrow">▼</span>`;
+        chip.classList.toggle('active', value !== 'all');
+
+        opt.closest('.dropdown-wrap').classList.remove('open');
+        applyFilters();
+      });
+    });
+
+    function applyFilters() {
+      let visible = 0;
+      document.querySelectorAll('.cards-grid .card').forEach(card => {
+        const ok =
+          (activeFilters.studying === 'all' || card.dataset.studying === activeFilters.studying) &&
+          (activeFilters.major    === 'all' || card.dataset.major    === activeFilters.major)    &&
+          (activeFilters.seats    === 'all' || parseInt(card.dataset.seats) >= parseInt(activeFilters.seats)) &&
+          (activeFilters.environment === 'all' || card.dataset.environment === activeFilters.environment);
+        card.classList.toggle('hidden', !ok);
+        if (ok) visible++;
+      });
+      document.getElementById('no-results').style.display = visible === 0 ? 'block' : 'none';
+    }
+  </script>
+
+</body>
+</html>
