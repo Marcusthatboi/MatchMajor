@@ -1,0 +1,42 @@
+.posts-page {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.posts-page h1 {
+  color: var(--brown);
+  margin-bottom: 8px;
+}
+
+.post-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.post-card {
+  border: 1px solid #e0e0e0;
+  background: white;
+  padding: 14px;
+  border-radius: 8px;
+}
+
+.post-info {
+  margin-bottom: 8px;
+  color: #777;
+  font-weight: 600;
+}
+
+.post-footer {
+  margin-top: 10px;
+}
+
+.post-footer button {
+  background: var(--gold);
+  color: var(--brown);
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}

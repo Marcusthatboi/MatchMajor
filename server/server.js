@@ -9,13 +9,13 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 // Import routes
-const authRoutes = require('./routes/authRoutes');
-const productRoutes = require('./routes/productRoutes');
-const cartRoutes = require('./routes/cartRoutes');
-const orderRoutes = require('./routes/orderRoutes');
+const authRoutes = require('../routes/authRoutes');
+const productRoutes = require('../routes/productRoutes');
+const cartRoutes = require('../routes/cartRoutes');
+const orderRoutes = require('../routes/orderRoutes');
 
 // Connect to database
-const connectDB = require('./config/db');
+const connectDB = require('../config/db');
 connectDB();
 
 const app = express();
