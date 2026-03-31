@@ -12,7 +12,7 @@ const Login = ({ setUser }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await login({ email, password });
+      const response = await login(email, password);
       if (response.success) {
         setUser(response.user);
         navigate('/survey');

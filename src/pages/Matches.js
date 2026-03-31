@@ -1,24 +1,96 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { getMatches } from '../api/matches';
 import './Matches.css';
 
-const mockMatches = [
-  { id: 1, name: 'Alex', skills: 'React, Node.js', common: 87 },
-  { id: 2, name: 'Jordan', skills: 'Python, Data Science', common: 75 },
-  { id: 3, name: 'Sam', skills: 'UI/UX, Frontend', common: 82 },
-];
-
 const Matches = () => {
+  const [matches, setMatches] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchMatches = async () => {
+      try {
+        setLoading(true);
+        const response = await getMatches();
+        if (response.success) {
+          setMatches(response.data);
+        } else {
+          setError('Failed to load matches');
+        }
+      } catch (err) {
+        console.error('Error fetching matches:', err);
+        setError('An error occurred while loading matches');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMatches();
+  }, []);
+
+  const getInitials = (name) => {
+    if (!name) return '?';
+    return name
+      .split(' ')
+      .map((part) => part[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase();
+  };
+
+  if (loading) {
+    return (
+      <div className="matches-page">
+        <h1>Your Matches</h1>
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="matches-page">
+        <h1>Your Matches</h1>
+        <p style={{ color: '#d32f2f' }}>Error: {error}</p>
+      </div>
+    );
+  }
+
+  if (matches.length === 0) {
+    return (
+      <div className="matches-page">
+        <h1>Your Matches</h1>
+        <p>No matches found. Please complete your profile to get better recommendations.</p>
+        <Link to="/survey" style={{ color: 'var(--primary-cyan)' }}>Complete Survey</Link>
+      </div>
+    );
+  }
+
   return (
     <div className="matches-page">
       <h1>Your Matches</h1>
       <p>These students align with your study goals and interests.</p>
       <div className="matches-grid">
-        {mockMatches.map((match) => (
-          <div key={match.id} className="match-card">
-            <h3>{match.name}</h3>
-            <p>Skills: {match.skills}</p>
-            <p>Compatibility: {match.common}%</p>
+        {matches.map((match) => (
+          <div key={match._id} className="match-card">
+            <div className="match-avatar-container">
+              {match.profilePhoto ? (
+                <img src={match.profilePhoto} alt={`${match.username} avatar`} className="match-avatar" />
+              ) : (
+                <div className="match-avatar-initials">{getInitials(match.username)}</div>
+              )}
+            </div>
+            <h3>{match.username}</h3>
+            <p><strong>Major:</strong> {match.major || 'Not specified'}</p>
+            <p><strong>Year:</strong> {match.year || 'Not specified'}</p>
+            <p><strong>Experience:</strong> {match.experience || 'Not specified'}</p>
+            {match.interests && match.interests.length > 0 && (
+              <p><strong>Interests:</strong> {match.interests.slice(0, 2).join(', ')}...</p>
+            )}
+            <p className="compatibility-score" style={{ color: 'var(--primary-cyan)', fontWeight: 'bold' }}>
+              ✓ {match.compatibilityScore}% Match
+            </p>
             <Link to="/chat" className="chat-link">Chat</Link>
           </div>
         ))}

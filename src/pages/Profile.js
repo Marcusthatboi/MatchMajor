@@ -3,7 +3,19 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import './Profile.css';
 
+const getInitials = (name) => {
+  if (!name) return '';
+  return name
+    .split(' ')
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+};
+
 const Profile = ({ user }) => {
+  const avatarUrl = user?.profilePhoto || user?.avatar || user?.image || null;
+  const initials = getInitials(user?.username);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -41,6 +53,13 @@ const Profile = ({ user }) => {
   return (
     <div className="profile-page">
       <div className="profile-header">
+        <div className="profile-avatar">
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={`${user.username}'s avatar`} />
+          ) : (
+            initials
+          )}
+        </div>
         <h1>My Profile</h1>
       </div>
       

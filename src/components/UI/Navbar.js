@@ -20,7 +20,7 @@ const Navbar = ({ user, setUser }) => {
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/" className="navbar-logo">
-          TechStore
+          MatchMajor
         </Link>
         
         <div className="navbar-links">
@@ -28,16 +28,11 @@ const Navbar = ({ user, setUser }) => {
           <Link to="/matches" className="nav-link">Matches</Link>
           <Link to="/posts" className="nav-link">Posts</Link>
           <Link to="/chat" className="nav-link">Chatroom</Link>
-          <Link to="/products" className="nav-link">Products</Link>
         </div>
         
         <div className="navbar-auth">
           {user ? (
             <>
-              <Link to="/cart" className="nav-link cart-link">
-                <i className="fas fa-shopping-cart"></i>
-                <span>Cart</span>
-              </Link>
               <div className="user-menu">
                 <span className="username">Hi, {user.username}</span>
                 <div className="dropdown-content">

@@ -4,11 +4,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Survey from './pages/Survey';
-import Products from './pages/Products';
-import ProductDetail from './pages/ProductDetail';
-import Cart from './pages/Cart';
-import Checkout from './pages/Checkout';
-import OrderSuccess from './pages/OrderSuccess';
+
 import Profile from './pages/Profile';
 import Matches from './pages/Matches';
 import Posts from './pages/Posts';
@@ -64,31 +60,6 @@ const App = () => {
             } />
             <Route path="/login" element={<Login setUser={setUser} />} />
             <Route path="/register" element={<Register setUser={setUser} />} />
-            <Route path="/products" element={
-              <ProtectedRoute>
-                <Products />
-              </ProtectedRoute>
-            } />
-            <Route path="/products/:id" element={
-              <ProtectedRoute>
-                <ProductDetail />
-              </ProtectedRoute>
-            } />
-            <Route path="/cart" element={
-              <ProtectedRoute>
-                <Cart />
-              </ProtectedRoute>
-            } />
-            <Route path="/checkout" element={
-              <ProtectedRoute>
-                <Checkout />
-              </ProtectedRoute>
-            } />
-            <Route path="/order-success/:id" element={
-              <ProtectedRoute>
-                <OrderSuccess />
-              </ProtectedRoute>
-            } />
             <Route path="/matches" element={
               <ProtectedRoute>
                 <Matches />

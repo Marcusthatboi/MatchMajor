@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './Survey.css';
+import { updateUserProfile } from '../api/matches';
 import './Survey.css';
 
 const Survey = ({ setUser }) => {
@@ -11,6 +11,8 @@ const Survey = ({ setUser }) => {
     experience: '',
     goals: ''
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -30,12 +32,44 @@ const Survey = ({ setUser }) => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Here you could save the survey data to the backend
-    console.log('Survey data:', formData);
-    // Navigate to matches afterward
-    navigate('/matches');
+    
+    // Validation
+    if (!formData.major || !formData.year || !formData.experience) {
+      setError('Please fill in all required fields (Major, Year, Experience).');
+      return;
+    }
+    
+    if (formData.interests.length === 0) {
+      setError('Please select at least one area of interest.');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Save survey data to backend
+      const response = await updateUserProfile(formData);
+      
+      if (response.success) {
+        // Update user context with new profile data
+        if (setUser) {
+          setUser(response.data);
+        }
+        // Navigate to matches
+        navigate('/matches');
+      } else {
+        setError(response.message || 'Failed to save profile. Please try again.');
+      }
+    } catch (err) {
+      console.error('Error saving profile:', err);
+      const errorMsg = err.response?.data?.message || err.message || 'An error occurred. Please try again.';
+      setError(errorMsg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const interestOptions = [
@@ -143,8 +177,12 @@ const Survey = ({ setUser }) => {
             />
           </div>
 
-          <button type="submit" className="submit-btn">Complete Survey</button>
+          <button type="submit" className="submit-btn" disabled={loading}>
+            {loading ? 'Saving...' : 'Complete Survey'}
+          </button>
         </form>
+        
+        {error && <div className="error-message" style={{marginTop: '20px', color: '#d32f2f', fontWeight: 'bold'}}>{error}</div>}
       </div>
     </div>
   );

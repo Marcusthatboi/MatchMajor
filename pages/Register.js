@@ -34,7 +34,7 @@ const Register = ({ setUser }) => {
     try {
       const response = await register(username, email, password);
       setUser(response.user);
-      navigate('/');
+      navigate('/survey');
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to register');
     } finally {

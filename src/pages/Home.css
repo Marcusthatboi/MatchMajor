@@ -4,7 +4,7 @@
 }
 
 .hero {
-  background: linear-gradient(to right, var(--primary-cyan), var(--cyan-light));
+  background: linear-gradient(to right, var(--brown), var(--gold));
   color: white;
   padding: 60px 20px;
   border-radius: 8px;
@@ -30,7 +30,7 @@
 
 .cta-button {
   display: inline-block;
-  background-color: var(--gold);
+  background-color: white;
   color: var(--brown);
   padding: 12px 30px;
   border-radius: 30px;
@@ -43,75 +43,7 @@
 .cta-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-}
-
-.featured-products {
-  padding: 20px;
-  margin-bottom: 40px;
-}
-
-.featured-products h2 {
-  font-size: 1.8rem;
-  text-align: center;
-  margin-bottom: 20px;
-  color: var(--brown);
-}
-
-.view-all {
-  display: block;
-  text-align: center;
-  margin-top: 30px;
-  color: var(--primary-cyan);
-  font-weight: 500;
-  font-size: 1.1rem;
-}
-
-.services {
-  background-color: var(--cyan-light);
-  padding: 50px 20px;
-  border-radius: 8px;
-}
-
-.services h2 {
-  font-size: 1.8rem;
-  text-align: center;
-  margin-bottom: 30px;
-  color: var(--brown);
-}
-
-.services-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 25px;
-}
-
-.service-card {
-  background-color: white;
-  border-radius: 8px;
-  padding: 25px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s;
-}
-
-.service-card:hover {
-  transform: translateY(-5px);
-}
-
-.service-card i {
-  font-size: 2.5rem;
-  color: var(--primary-cyan);
-  margin-bottom: 15px;
-}
-
-.service-card h3 {
-  font-size: 1.3rem;
-  margin-bottom: 10px;
-  color: var(--brown);
-}
-
-.service-card p {
-  color: var(--brown);
+  background-color: var(--gold);
 }
 
 .social-modules {
@@ -121,7 +53,7 @@
 
 .modules-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: 1fr 1fr;
   gap: 30px;
   max-width: 1200px;
   margin: 0 auto;
@@ -220,8 +152,12 @@
   border-radius: 6px;
   padding: 12px;
   margin-bottom: 20px;
-  max-height: 120px;
+  min-height: 250px;
+  height: 280px;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .chat-message-preview {
@@ -247,6 +183,17 @@
 .module-link:hover {
   background-color: var(--cyan-dark);
   transform: translateY(-1px);
+}
+
+.chat-module {
+  display: flex;
+  flex-direction: column;
+  grid-column: 1 / -1;
+}
+
+.chat-module .chat-preview {
+  flex: 1;
+  min-height: 300px;
 }
 
 @media (max-width: 768px) {

@@ -20,6 +20,32 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  // Survey/Profile data for matching
+  major: {
+    type: String,
+    default: null
+  },
+  year: {
+    type: String,
+    enum: ['Freshman', 'Sophomore', 'Junior', 'Senior', 'Graduate', 'Other'],
+    default: null
+  },
+  interests: [{
+    type: String
+  }],
+  experience: {
+    type: String,
+    enum: ['Beginner', 'Intermediate', 'Advanced', 'Expert'],
+    default: null
+  },
+  goals: {
+    type: String,
+    default: null
+  },
+  profilePhoto: {
+    type: String,
+    default: null
+  },
   role: {
     type: String,
     enum: ['user', 'admin'],
