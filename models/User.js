@@ -66,7 +66,8 @@ userSchema.pre('save', async function() {
   }
   
   try {
-    const salt = await bcrypt.genSalt(10);
+    // Increased salt rounds from 10 to 12 for stronger security
+    const salt = await bcrypt.genSalt(12);
     this.password = await bcrypt.hash(this.password, salt);
   } catch (error) {
     throw error;
