@@ -1,0 +1,23 @@
+# Development Dockerfile for Frontend
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy source files
+COPY public ./public
+COPY src ./src
+
+# Expose frontend port
+EXPOSE 3000
+
+# Enable hot reload with react-scripts
+ENV DANGEROUSLY_DISABLE_HOST_CHECK=true
+
+# Start development server
+CMD ["npm", "run", "start:frontend"]
