@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en" data-auto-load-navbar="true">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <!-- ============================================================
+       PAGE TITLE
+       ============================================================ -->
+  <title>MatchMajor – Edit Profile</title>
+
+  <!-- Same Google Fonts used across the site -->
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&family=Poppins:wght@400;500;700&display=swap" rel="stylesheet"/>
+
+  <!-- Shared navbar styles — adjust path if folder structure differs -->
+  <link rel="stylesheet" href="../../components/UI/navbar-styles.css"/>
+
+  <style>
+    /* ============================================================
+       RESET & BOX MODEL
+       ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ============================================================
+       DESIGN TOKENS — keep in sync with the rest of the site
+       ============================================================ */
+    :root {
+      --cyan:            #00aabb;
+      --cyan-dark:       #2f6f63;
+      --cyan-light:      #b2f0f5;
+      --gold:            #f9c846;
+      --text-dark:       #000000;
+      --text-mid:        #2c4a5a;
+      --white:           #ffffff;
+      --bg:              #f0fafb;
+      --shadow-card:     0 6px 24px rgba(0,160,180,0.18);
+      --tag-radius:      20px;
+      --section-gap:     1.75rem;
+
+      /* Form-specific tokens */
+      --input-radius:    10px;    /* border-radius on all inputs/textareas/selects */
+      --input-border:    2px solid var(--cyan);
+      --input-focus:     2px solid var(--cyan-dark);
+      --label-size:      0.78rem;
+    }
+
+    /* ============================================================
+       BASE STYLES
+       ============================================================ */
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: var(--text-dark);
+      min-height: 100vh;
+    }
+
+    /* ============================================================
+       MAIN LAYOUT WRAPPER
+       ============================================================ */
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 5rem;
+    }
+
+    /* ============================================================
+       PAGE HEADING
+       ============================================================ */
+    h1 {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 900;
+      font-size: clamp(2rem, 5vw, 3rem);
+      text-align: center;
+      color: var(--cyan-dark);
+      margin-bottom: 2.5rem;
+      letter-spacing: -0.5px;
+    }
+
+    /* ============================================================
+       BACK LINK
+       ============================================================ */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--cyan-dark);
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-decoration: none;
+      margin-bottom: 1.5rem;
+      transition: gap 0.15s;
+    }
+    .back-link:hover { gap: 0.2rem; }
+
+    /* ============================================================
+       FORM CARD — outer container
+       ============================================================ */
+    .form-card {
+      background: var(--white);
+      border: 3px solid var(--cyan-dark);
+      border-radius: 24px;
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ============================================================
+       CARD BANNER — coloured header strip
+       ============================================================ */
+    .form-banner {
+      background: linear-gradient(135deg, var(--cyan) 0%, var(--cyan-dark) 100%);
+      padding: 1.2rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .form-banner-icon {
+      font-size: 1.5rem;
+      line-height: 1;
+    }
+
+    .form-banner-title {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 900;
+      font-size: 1.2rem;
+      color: var(--white);
+    }
+
+    /* ============================================================
+       FORM BODY
+       ============================================================ */
+    .form-body {
+      padding: 2rem 2rem 2.5rem;
+    }
+
+    /* ============================================================
+       FORM SECTIONS — visually grouped blocks of related fields.
+       Each section has a heading + its fields inside.
+       ============================================================ */
+    .form-section {
+      margin-bottom: var(--section-gap);
+    }
+
+    .form-section:last-of-type {
+      margin-bottom: 0;
+    }
+
+    .section-heading {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 900;
+      font-size: 0.95rem;
+      color: var(--cyan-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 2px solid var(--cyan-light);
+    }
+
+    /* ============================================================
+       FIELD ROWS — two-column layout for short fields.
+       Use .field-row for pairs, .field-full for full-width fields.
+       ============================================================ */
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;   /* two equal columns */
+      gap: 1rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .field-full {
+      margin-bottom: 1rem;
+    }
+
+    /* ============================================================
+       FIELD GROUP — label + input/textarea/select combo
+       ============================================================ */
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    /* ── LABEL ── */
+    .field-group label {
+      font-size: var(--label-size);
+      font-weight: 700;
+      color: var(--text-mid);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* ── INPUT / SELECT / TEXTAREA shared styles ── */
+    .field-group input,
+    .field-group select,
+    .field-group textarea {
+      border: var(--input-border);
+      border-radius: var(--input-radius);
+      padding: 0.55rem 0.85rem;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.88rem;
+      color: var(--text-dark);
+      background: var(--white);
+      outline: none;
+      transition: border 0.15s, box-shadow 0.15s;
+    }
+
+    .field-group input:focus,
+    .field-group select:focus,
+    .field-group textarea:focus {
+      border: var(--input-focus);
+      box-shadow: 0 0 0 3px rgba(0,170,187,0.12);
+    }
+
+    /* ── TEXTAREA ── */
+    .field-group textarea {
+      resize: vertical;
+      min-height: 110px;  /* increase for more default bio space */
+      line-height: 1.6;
+    }
+
+    /* ── HINT TEXT below a field ── */
+    .field-hint {
+      font-size: 0.75rem;
+      color: var(--text-mid);
+      opacity: 0.7;
+      margin-top: 0.15rem;
+    }
+
+    /* ============================================================
+       AVATAR UPLOAD AREA
+       ============================================================ */
+    .avatar-upload {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Preview circle */
+    .avatar-preview {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--text-dark);
+      border: 3px solid var(--cyan);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .avatar-preview svg {
+      width: 44px;
+      height: 44px;
+      fill: var(--white);
+    }
+
+    /* When a real image is loaded, it fills the circle */
+    .avatar-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .avatar-upload-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    /* Hidden real file input; triggered by the styled button below */
+    #avatar-file-input { display: none; }
+
+    .btn-upload {
+      background: var(--white);
+      border: var(--input-border);
+      border-radius: var(--tag-radius);
+      padding: 0.45rem 1.1rem;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--cyan-dark);
+      cursor: pointer;
+      width: fit-content;
+      transition: background 0.15s;
+    }
+    .btn-upload:hover { background: var(--cyan-light); }
+
+    .avatar-hint {
+      font-size: 0.75rem;
+      color: var(--text-mid);
+      opacity: 0.7;
+    }
+
+    /* ============================================================
+       TAGS EDITOR
+       Users can add custom interest tags and remove existing ones.
+       ============================================================ */
+    .tags-editor {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      padding: 0.6rem 0.75rem;
+      border: var(--input-border);
+      border-radius: var(--input-radius);
+      background: var(--white);
+      min-height: 48px;
+      cursor: text;
+      transition: border 0.15s, box-shadow 0.15s;
+    }
+
+    .tags-editor:focus-within {
+      border: var(--input-focus);
+      box-shadow: 0 0 0 3px rgba(0,170,187,0.12);
+    }
+
+    /* Individual tag pill inside the editor */
+    .tag-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      background: var(--cyan-light);
+      border: 2px solid var(--cyan);
+      color: var(--text-dark);
+      border-radius: var(--tag-radius);
+      padding: 0.2rem 0.65rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    /* × remove button on each tag */
+    .tag-remove {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+      color: var(--text-mid);
+      padding: 0;
+      line-height: 1;
+      transition: color 0.1s;
+    }
+    .tag-remove:hover { color: #c0392b; }
+
+    /* Invisible text input inside the tag editor */
+    .tag-input {
+      border: none;
+      outline: none;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.85rem;
+      color: var(--text-dark);
+      background: transparent;
+      min-width: 120px;
+      flex: 1;
+    }
+
+    /* ============================================================
+       FORM ACTIONS — Save / Cancel
+       ============================================================ */
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      margin-top: calc(var(--section-gap) + 0.5rem);
+      padding-top: var(--section-gap);
+      border-top: 2px solid var(--cyan-light);
+    }
+
+    /* Primary save button */
+    .btn-save {
+      background: var(--cyan-dark);
+      color: var(--white);
+      border: 2px solid var(--cyan-dark);
+      border-radius: var(--tag-radius);
+      padding: 0.65rem 2rem;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.15s;
+    }
+    .btn-save:hover {
+      background: var(--cyan);
+      border-color: var(--cyan);
+      transform: translateY(-2px);
+    }
+
+    /* Cancel link button */
+    .btn-cancel {
+      background: var(--white);
+      color: var(--text-mid);
+      border: 2px solid #ccc;
+      border-radius: var(--tag-radius);
+      padding: 0.65rem 1.5rem;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      transition: background 0.15s;
+    }
+    .btn-cancel:hover { background: #f0f0f0; }
+
+    /* ============================================================
+       SUCCESS TOAST — briefly shown after saving
+       ============================================================ */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--cyan-dark);
+      color: var(--white);
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding: 0.75rem 1.75rem;
+      border-radius: 30px;
+      box-shadow: 0 8px 28px rgba(0,120,140,0.30);
+      transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
+    @media (max-width: 600px) {
+      .form-body { padding: 1.25rem; }
+      .field-row { grid-template-columns: 1fr; }
+      .form-actions { justify-content: stretch; }
+      .btn-save, .btn-cancel { flex: 1; text-align: center; justify-content: center; }
+      h1 { font-size: 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar injected by shared loader -->
+<div id="navbar-container"></div>
+
+<!-- Success toast notification -->
+<div class="toast" id="toast">✅ Profile saved!</div>
+
+<main>
+
+  <!-- ============================================================
+       BACK NAVIGATION
+       Update href to point to your profile view page.
+       ============================================================ -->
+  <a class="back-link" href="my-profile.html">← Back to Profile</a>
+
+  <h1>Edit Profile</h1>
+
+  <div class="form-card">
+
+    <!-- ── BANNER ── -->
+    <div class="form-banner">
+      <span class="form-banner-icon">✏️</span>
+      <span class="form-banner-title">Update Your Information</span>
+    </div>
+
+    <!-- ── FORM BODY ── -->
+    <div class="form-body">
+
+      <!-- ===========================================================
+           SECTION 1 — PHOTO
+           =========================================================== -->
+      <div class="form-section">
+        <p class="section-heading">Profile Photo</p>
+
+        <div class="avatar-upload">
+          <!-- Preview circle — filled by JS when user picks a file -->
+          <div class="avatar-preview" id="avatar-preview">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+            </svg>
+          </div>
+
+          <div class="avatar-upload-info">
+            <!-- Hidden real file input -->
+            <input type="file" id="avatar-file-input" accept="image/*"/>
+            <!-- Visible styled trigger button -->
+            <button class="btn-upload" onclick="document.getElementById('avatar-file-input').click()">
+              📷 Choose Photo
+            </button>
+            <span class="avatar-hint">JPG or PNG · max 5 MB</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===========================================================
+           SECTION 2 — BASIC INFO
+           To add a new field: copy a .field-group block, give the
+           input a unique id/name, and update the label.
+           =========================================================== -->
+      <div class="form-section">
+        <p class="section-heading">Basic Info</p>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="first-name">First Name</label>
+            <!-- ↓ Pre-fill with the user's current value from your backend -->
+            <input type="text" id="first-name" name="first_name" value="Alex" placeholder="First name"/>
+          </div>
+
+          <div class="field-group">
+            <label for="last-name">Last Name</label>
+            <input type="text" id="last-name" name="last_name" value="Rivera" placeholder="Last name"/>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="year">Year</label>
+            <!-- ↓ Add/remove <option> values to match your school's year options -->
+            <select id="year" name="year">
+              <option value="freshman">Freshman</option>
+              <option value="sophomore">Sophomore</option>
+              <option value="junior" selected>Junior</option>
+              <option value="senior">Senior</option>
+              <option value="grad">Graduate</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label for="major">Major</label>
+            <input type="text" id="major" name="major" value="Computer Science" placeholder="e.g. Computer Science"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===========================================================
+           SECTION 3 — ABOUT / BIO
+           =========================================================== -->
+      <div class="form-section">
+        <p class="section-heading">About You</p>
+
+        <div class="field-full field-group">
+          <label for="bio">Bio</label>
+          <textarea id="bio" name="bio" placeholder="Tell potential roommates a bit about yourself…">Hey! I'm Alex, a junior studying Computer Science with a focus on machine learning. I'm originally from Austin, TX, and I'm looking for a chill, respectful roommate to share an on-campus apartment. I tend to keep a consistent schedule — early riser, usually done with classes by 3 PM. I love hiking on weekends, cooking (and sharing food!), and the occasional late-night gaming session. Happy to chat before we commit to anything!</textarea>
+          <span class="field-hint">Keep it friendly — this is the first thing people read.</span>
+        </div>
+      </div>
+
+      <!-- ===========================================================
+           SECTION 4 — LIVING PREFERENCES
+           Each .field-row holds two fields. Add more rows as needed.
+           =========================================================== -->
+      <div class="form-section">
+        <p class="section-heading">Living Preferences</p>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="sleep-schedule">Sleep Schedule</label>
+            <select id="sleep-schedule" name="sleep_schedule">
+              <option value="early" selected>Early bird (before 11 PM)</option>
+              <option value="normal">Normal (11 PM – 1 AM)</option>
+              <option value="night-owl">Night owl (after 1 AM)</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label for="study-habits">Study Habits</label>
+            <select id="study-habits" name="study_habits">
+              <option value="on-campus" selected>Mostly on campus / library</option>
+              <option value="at-home">Mostly at home</option>
+              <option value="mixed">Mixed</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="cleanliness">Cleanliness</label>
+            <select id="cleanliness" name="cleanliness">
+              <option value="very-tidy" selected>Very tidy</option>
+              <option value="tidy">Tidy</option>
+              <option value="average">Average</option>
+              <option value="relaxed">Relaxed</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label for="guests">Guests</label>
+            <select id="guests" name="guests">
+              <option value="rarely">Rarely</option>
+              <option value="occasional" selected>Occasional, heads-up first</option>
+              <option value="frequent">Frequent</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="pets">Pets</label>
+            <input type="text" id="pets" name="pets" value="No pets; allergic to cats" placeholder="e.g. No pets, have a dog…"/>
+          </div>
+
+          <div class="field-group">
+            <label for="location-pref">Location Preference</label>
+            <input type="text" id="location-pref" name="location_pref" value="On-campus or within 1 mile" placeholder="e.g. On-campus, North side…"/>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <!-- Budget — two fields for min / max -->
+          <div class="field-group">
+            <label for="budget-min">Min Budget ($/mo)</label>
+            <input type="number" id="budget-min" name="budget_min" value="700" min="0" placeholder="700"/>
+          </div>
+
+          <div class="field-group">
+            <label for="budget-max">Max Budget ($/mo)</label>
+            <input type="number" id="budget-max" name="budget_max" value="900" min="0" placeholder="900"/>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="move-in">Move-in Date</label>
+            <!-- ↓ Set value to today or the user's current move-in date -->
+            <input type="date" id="move-in" name="move_in_date" value="2025-08-15"/>
+          </div>
+
+          <!-- Spare column — add another field here if needed, or leave empty -->
+          <div></div>
+        </div>
+      </div>
+
+      <!-- ===========================================================
+           SECTION 5 — INTERESTS & LIFESTYLE TAGS
+           Type a tag and press Enter or comma to add it.
+           Click × on any pill to remove it.
+           =========================================================== -->
+      <div class="form-section">
+        <p class="section-heading">Interests & Lifestyle</p>
+
+        <div class="field-full field-group">
+          <label>Tags</label>
+
+          <!-- Tag editor container — looks like an input, works like a tag box -->
+          <div class="tags-editor" id="tags-editor" onclick="document.getElementById('tag-input').focus()">
+            <!-- Pre-populated tags — each needs a unique data-tag value matching the label -->
+            <span class="tag-pill" data-tag="Hiking">🥾 Hiking <button class="tag-remove" aria-label="Remove Hiking">×</button></span>
+            <span class="tag-pill" data-tag="Gaming">🎮 Gaming <button class="tag-remove" aria-label="Remove Gaming">×</button></span>
+            <span class="tag-pill" data-tag="Cooking">🍳 Cooking <button class="tag-remove" aria-label="Remove Cooking">×</button></span>
+            <span class="tag-pill" data-tag="Coffee lover">☕ Coffee lover <button class="tag-remove" aria-label="Remove Coffee lover">×</button></span>
+            <span class="tag-pill" data-tag="Study sessions">📚 Study sessions <button class="tag-remove" aria-label="Remove Study sessions">×</button></span>
+            <span class="tag-pill" data-tag="Indie music">🎵 Indie music <button class="tag-remove" aria-label="Remove Indie music">×</button></span>
+            <span class="tag-pill" data-tag="Cycling">🚴 Cycling <button class="tag-remove" aria-label="Remove Cycling">×</button></span>
+            <span class="tag-pill" data-tag="Plant parent">🌱 Plant parent <button class="tag-remove" aria-label="Remove Plant parent">×</button></span>
+
+            <!-- Invisible text input at the end of the pill list -->
+            <input class="tag-input" id="tag-input" type="text" placeholder="Add a tag…" autocomplete="off"/>
+          </div>
+
+          <span class="field-hint">Press <strong>Enter</strong> or <strong>,</strong> to add · click <strong>×</strong> to remove</span>
+        </div>
+      </div>
+
+      <!-- ===========================================================
+           FORM ACTIONS
+           Save calls handleSave(); Cancel returns to profile view.
+           =========================================================== -->
+      <div class="form-actions">
+        <!-- Update href to your profile view page -->
+        <a class="btn-cancel" href="my-profile.html">Cancel</a>
+        <button class="btn-save" onclick="handleSave()">💾 Save Changes</button>
+      </div>
+
+    </div><!-- /form-body -->
+  </div><!-- /form-card -->
+
+</main>
+
+<script>
+  /* ============================================================
+     AVATAR PREVIEW
+     Shows a live preview when the user picks a photo.
+     ============================================================ */
+  document.getElementById('avatar-file-input').addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const preview = document.getElementById('avatar-preview');
+      // Replace SVG with an actual image element
+      preview.innerHTML = `<img src="${e.target.result}" alt="Profile photo preview"/>`;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  /* ============================================================
+     TAG EDITOR
+     - Press Enter or , to commit a tag
+     - Click × button to remove a tag
+     ============================================================ */
+  const tagInput  = document.getElementById('tag-input');
+  const tagEditor = document.getElementById('tags-editor');
+
+  // Add tag on Enter or comma keystroke
+  tagInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const value = tagInput.value.trim().replace(/,$/, '');
+      if (value) addTag(value);
+      tagInput.value = '';
+    }
+    // Remove last tag on Backspace when input is empty
+    if (e.key === 'Backspace' && tagInput.value === '') {
+      const pills = tagEditor.querySelectorAll('.tag-pill');
+      if (pills.length) pills[pills.length - 1].remove();
+    }
+  });
+
+  // Create and insert a new tag pill before the text input
+  function addTag(text) {
+    const pill = document.createElement('span');
+    pill.className = 'tag-pill';
+    pill.dataset.tag = text;
+    pill.innerHTML = `${text} <button class="tag-remove" aria-label="Remove ${text}">×</button>`;
+    pill.querySelector('.tag-remove').addEventListener('click', () => pill.remove());
+    tagEditor.insertBefore(pill, tagInput);
+  }
+
+  // Wire up × buttons on pre-populated tags
+  tagEditor.querySelectorAll('.tag-remove').forEach(btn => {
+    btn.addEventListener('click', () => btn.closest('.tag-pill').remove());
+  });
+
+  /* ============================================================
+     COLLECT ALL CURRENT TAGS
+     Returns an array of tag strings from the editor.
+     Call this in handleSave() before submitting to your API.
+     ============================================================ */
+  function getCurrentTags() {
+    return Array.from(tagEditor.querySelectorAll('.tag-pill'))
+      .map(p => p.dataset.tag);
+  }
+
+  /* ============================================================
+     SAVE HANDLER
+     Replace the body of this function with a real API call
+     (e.g. fetch('/api/profile', { method: 'PATCH', body: ... }))
+     then redirect back to profile.html on success.
+     ============================================================ */
+  function handleSave() {
+    const payload = {
+      first_name:     document.getElementById('first-name').value,
+      last_name:      document.getElementById('last-name').value,
+      year:           document.getElementById('year').value,
+      major:          document.getElementById('major').value,
+      bio:            document.getElementById('bio').value,
+      sleep_schedule: document.getElementById('sleep-schedule').value,
+      study_habits:   document.getElementById('study-habits').value,
+      cleanliness:    document.getElementById('cleanliness').value,
+      guests:         document.getElementById('guests').value,
+      pets:           document.getElementById('pets').value,
+      location_pref:  document.getElementById('location-pref').value,
+      budget_min:     document.getElementById('budget-min').value,
+      budget_max:     document.getElementById('budget-max').value,
+      move_in_date:   document.getElementById('move-in').value,
+      tags:           getCurrentTags(),
+    };
+
+    // TODO: replace with real API call
+    console.log('Saving profile:', payload);
+
+    // Show success toast, then navigate back to profile view
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(() => {
+      toast.classList.remove('show');
+      window.location.href = 'my-profile.html';
+    }, 2000);
+  }
+</script>
+
+<!-- Shared navbar loader — adjust path if folder structure differs -->
+<script src="../../components/UI/navbar-loader.js"></script>
+
+</body>
+</html>

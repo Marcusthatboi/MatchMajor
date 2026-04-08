@@ -4,7 +4,6 @@ const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const path = require('path');
 
 // Load environment variables
 dotenv.config();
@@ -30,24 +29,12 @@ app.use(cors({
   credentials: true
 }));
 
-// Serve static files from build folder in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../build')));
-}
-
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/matches', matchRoutes);
-
-// Serve React App for all non-API routes (SPA fallback)
-if (process.env.NODE_ENV === 'production') {
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../build/index.html'));
-  });
-}
 
 // Error handler
 app.use((err, req, res, next) => {
