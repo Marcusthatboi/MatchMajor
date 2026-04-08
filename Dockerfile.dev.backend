@@ -1,0 +1,27 @@
+# Development Dockerfile for Backend
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY server/package*.json ./
+
+# Install all dependencies (including dev)
+RUN npm ci
+
+# Copy source files
+COPY server ./
+COPY config ../config
+COPY controllers ../controllers
+COPY routes ../routes
+COPY middleware ../middleware
+COPY models ../models
+
+# Install nodemon globally for development
+RUN npm install -g nodemon
+
+# Expose backend port
+EXPOSE 5000
+
+# Start with nodemon for development
+CMD ["nodemon", "server.js"]
