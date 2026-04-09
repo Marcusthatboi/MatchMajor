@@ -20,104 +20,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  // Survey/Profile data for matching
-  major: {
-    type: String,
-    default: null
-  },
-  year: {
-    type: String,
-    enum: ['Freshman', 'Sophomore', 'Junior', 'Senior', 'Graduate', 'Other'],
-    default: null
-  },
-  interests: [{
-    type: String
-  }],
-  experience: {
-    type: String,
-    enum: ['Beginner', 'Intermediate', 'Advanced', 'Expert'],
-    default: null
-  },
-  goals: {
-    type: String,
-    default: null
-  },
-  sleepSchedule: {
-    type: String,
-    enum: ['Early Bird', 'Night Owl', 'Flexible'],
-    default: null
-  },
-  cleanliness: {
-    type: String,
-    enum: ['Very Tidy', 'Tidy', 'Average', 'Messy'],
-    default: null
-  },
-  visitorPolicy: {
-    type: String,
-    default: null
-  },
-  items: {
-    type: String,
-    default: null
-  },
-  pets: {
-    type: String,
-    default: null
-  },
-  allergies: {
-    type: String,
-    default: null
-  },
-  campusSelection: {
-    type: String,
-    default: null
-  },
-  socialBattery: {
-    type: String,
-    default: null
-  },
-  hobbies: {
-    type: String,
-    default: null
-  },
-  currentClasses: {
-    type: String,
-    default: null
-  },
-  studyGoals: {
-    type: String,
-    default: null
-  },
-  honors: {
-    type: String,
-    default: null
-  },
-  studyLocation: {
-    type: String,
-    default: null
-  },
-  studyTimes: {
-    type: String,
-    default: null
-  },
-  idealGroupSize: {
-    type: String,
-    default: null
-  },
-  virtualOrInPerson: {
-    type: String,
-    default: null
-  },
-  studyHabits: {
-    type: String,
-    default: null
-  },
-  studyStyle: {
-    type: String,
-    default: null
-  },
   profilePhoto: {
     type: String,
+    default: null
+  },
+  // Reference to Survey collection for profile/matching data
+  survey: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Survey',
     default: null
   },
   role: {

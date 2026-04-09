@@ -7,7 +7,9 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "export": "node scripts/exportDatabase.js",
-    "import": "node scripts/importDatabase.js"
+    "export:direct": "node scripts/exportDatabaseDirect.js",
+    "import": "node scripts/importDatabase.js",
+    "migrate:survey": "node scripts/migrateSurveyData.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

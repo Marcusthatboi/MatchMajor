@@ -10,8 +10,8 @@ const getMatches = async (req, res) => {
   try {
     const userId = req.user._id;
     
-    // Get current user
-    const currentUser = await User.findById(userId);
+    // Get current user with their survey
+    const currentUser = await User.findById(userId).populate('survey');
     if (!currentUser) {
       return res.status(404).json({ 
         success: false, 
@@ -19,11 +19,24 @@ const getMatches = async (req, res) => {
       });
     }
 
-    // Get all other users
-    const allUsers = await User.find({ _id: { $ne: userId } });
+    // Get all other users with their surveys
+    const allUsers = await User.find({ _id: { $ne: userId } }).populate('survey');
+
+    // Prepare users for matching algorithm
+    const currentUserForMatching = currentUser.survey ? { 
+      ...currentUser.toObject(),
+      ...currentUser.survey.toObject()
+    } : currentUser.toObject();
+    
+    const allUsersForMatching = allUsers.map(user => 
+      user.survey ? { 
+        ...user.toObject(),
+        ...user.survey.toObject()
+      } : user.toObject()
+    );
 
     // Calculate compatibility and get matches
-    const matches = await getMatchedUsers(currentUser, allUsers);
+    const matches = await getMatchedUsers(currentUserForMatching, allUsersForMatching);
 
     res.json({
       success: true,
@@ -81,99 +94,46 @@ const getUserProfile = async (req, res) => {
 /**
  * Update user profile/survey data
  * PUT /api/matches/profile
+ * NOTE: This endpoint now updates the Survey collection instead of User collection
  */
 const updateProfile = async (req, res) => {
   try {
     const userId = req.user._id;
-    const {
-      major,
-      year,
-      interests,
-      experience,
-      goals,
-      sleepSchedule,
-      cleanliness,
-      visitorPolicy,
-      items,
-      pets,
-      allergies,
-      campusSelection,
-      socialBattery,
-      hobbies,
-      currentClasses,
-      studyGoals,
-      honors,
-      studyLocation,
-      studyTimes,
-      idealGroupSize,
-      virtualOrInPerson,
-      studyHabits,
-      studyStyle
-    } = req.body;
+    const surveyData = req.body;
     
-    console.log('Updating profile for user:', userId);
-    console.log('Profile data:', {
-      major,
-      year,
-      interests,
-      experience,
-      goals,
-      sleepSchedule,
-      cleanliness,
-      visitorPolicy,
-      items,
-      pets,
-      allergies,
-      campusSelection,
-      socialBattery,
-      hobbies,
-      currentClasses,
-      studyGoals,
-      honors,
-      studyLocation,
-      studyTimes,
-      idealGroupSize,
-      virtualOrInPerson,
-      studyHabits,
-      studyStyle
-    });
+    console.log('Updating survey for user:', userId);
+    console.log('Survey data:', surveyData);
 
-    const user = await User.findByIdAndUpdate(
-      userId,
-      {
-        major,
-        year,
-        interests,
-        experience,
-        goals,
-        sleepSchedule,
-        cleanliness,
-        visitorPolicy,
-        items,
-        pets,
-        allergies,
-        campusSelection,
-        socialBattery,
-        hobbies,
-        currentClasses,
-        studyGoals,
-        honors,
-        studyLocation,
-        studyTimes,
-        idealGroupSize,
-        virtualOrInPerson,
-        studyHabits,
-        studyStyle
-      },
-      { new: true, runValidators: true }
-    ).select('-password');
+    // Import Survey model here to avoid circular dependencies
+    const Survey = require('../models/Survey');
+
+    // Check if survey already exists
+    let survey = await Survey.findOne({ userId });
+
+    if (survey) {
+      // Update existing survey
+      survey = await Survey.findByIdAndUpdate(
+        survey._id,
+        surveyData,
+        { new: true, runValidators: true }
+      );
+    } else {
+      // Create new survey
+      survey = await Survey.create({
+        userId,
+        ...surveyData
+      });
+
+      // Link survey to user
+      await User.findByIdAndUpdate(userId, { survey: survey._id });
+    }
     
-    console.log('Profile updated successfully');
+    console.log('Survey updated successfully');
 
     res.json({
       success: true,
       message: 'Profile updated successfully',
-      data: user
+      data: survey
     });
   } catch (error) {
     console.error('Error updating profile:', error);
