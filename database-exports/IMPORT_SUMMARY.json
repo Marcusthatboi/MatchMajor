@@ -1,0 +1,12 @@
+{
+  "importDate": "2026-04-09T23:01:35.386Z",
+  "database": "mongodb://localhost:27017/matchmajor",
+  "collections": {
+    "users": 1,
+    "products": 0,
+    "orders": 0,
+    "carts": 0
+  },
+  "files": {},
+  "totalDocs": 1
+}

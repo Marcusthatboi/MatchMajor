@@ -9,6 +9,7 @@
     "export": "node scripts/exportDatabase.js",
     "export:direct": "node scripts/exportDatabaseDirect.js",
     "import": "node scripts/importDatabase.js",
+    "import:direct": "node scripts/importDatabaseDirect.js",
     "migrate:survey": "node scripts/migrateSurveyData.js"
   },
   "dependencies": {

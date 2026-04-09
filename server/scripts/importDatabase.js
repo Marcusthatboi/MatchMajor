@@ -22,10 +22,13 @@ async function importDatabase() {
   try {
     console.log('🔄 Connecting to MongoDB...');
     
-    // Connect to MongoDB
+    // Connect to MongoDB with extended timeouts
     await mongoose.connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,
-      useUnifiedTopology: true
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 30000,
+      socketTimeoutMS: 30000,
+      maxPoolSize: 10
     });
     
     console.log('✅ Connected to MongoDB!');
@@ -36,7 +39,8 @@ async function importDatabase() {
     const usersFile = path.join(importDir, 'users.json');
     if (fs.existsSync(usersFile)) {
       const usersData = JSON.parse(fs.readFileSync(usersFile, 'utf-8'));
-      await User.deleteMany({}); // Clear existing data
+      // Use collection directly with timeout options
+      await User.collection.deleteMany({}, { maxTimeMS: 30000 });
       const insertedUsers = await User.insertMany(usersData, { ordered: false });
       console.log(`✅ Users imported: ${insertedUsers.length} documents\n`);
     } else {
@@ -48,7 +52,7 @@ async function importDatabase() {
     const productsFile = path.join(importDir, 'products.json');
     if (fs.existsSync(productsFile)) {
       const productsData = JSON.parse(fs.readFileSync(productsFile, 'utf-8'));
-      await Product.deleteMany({}); // Clear existing data
+      await Product.collection.deleteMany({}, { maxTimeMS: 30000 });
       const insertedProducts = await Product.insertMany(productsData, { ordered: false });
       console.log(`✅ Products imported: ${insertedProducts.length} documents\n`);
     } else {
@@ -60,7 +64,7 @@ async function importDatabase() {
     const ordersFile = path.join(importDir, 'orders.json');
     if (fs.existsSync(ordersFile)) {
       const ordersData = JSON.parse(fs.readFileSync(ordersFile, 'utf-8'));
-      await Order.deleteMany({}); // Clear existing data
+      await Order.collection.deleteMany({}, { maxTimeMS: 30000 });
       const insertedOrders = await Order.insertMany(ordersData, { ordered: false });
       console.log(`✅ Orders imported: ${insertedOrders.length} documents\n`);
     } else {
@@ -72,7 +76,7 @@ async function importDatabase() {
     const cartsFile = path.join(importDir, 'carts.json');
     if (fs.existsSync(cartsFile)) {
       const cartsData = JSON.parse(fs.readFileSync(cartsFile, 'utf-8'));
-      await Cart.deleteMany({}); // Clear existing data
+      await Cart.collection.deleteMany({}, { maxTimeMS: 30000 });
       const insertedCarts = await Cart.insertMany(cartsData, { ordered: false });
       console.log(`✅ Carts imported: ${insertedCarts.length} documents\n`);
     } else {
