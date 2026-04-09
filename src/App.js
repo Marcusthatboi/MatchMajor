@@ -50,7 +50,7 @@ const App = () => {
           <Routes>
             <Route path="/survey" element={
               <ProtectedRoute>
-                <Survey setUser={setUser} />
+                <Survey setUser={setUser} user={user} />
               </ProtectedRoute>
             } />
             <Route path="/" element={

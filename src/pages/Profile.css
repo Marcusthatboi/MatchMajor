@@ -44,9 +44,67 @@
 }
 
 .profile-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+
+.profile-row {
+  width: 100%;
   display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 30px;
+  gap: 20px;
+}
+
+.profile-row--three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.profile-row--two {
+  grid-template-columns: repeat(2, minmax(280px, 520px));
+  justify-content: center;
+}
+
+.profile-row--two .profile-info {
+  max-width: 520px;
+}
+
+.profile-row--center {
+  display: flex;
+  justify-content: center;
+}
+
+.profile-row--center .profile-info {
+  max-width: 1060px;
+  width: 100%;
+}
+
+.profile-info {
+  width: 100%;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.05);
+  min-height: 280px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.profile-info h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.profile-info .info-group {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .profile-sidebar {
@@ -235,6 +293,15 @@
 .order-card-actions a:hover,
 .order-card-actions button:hover {
   background-color: #0b7dda;
+}
+
+.prompt {
+  width: 100%;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--brown);
+  margin: 0 auto;
 }
 
 @media (max-width: 768px) {

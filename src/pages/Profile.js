@@ -64,63 +64,155 @@ const Profile = ({ user }) => {
       </div>
       
       <div className="profile-content">
-        <div className="profile-info">
-          <h2>Account Information</h2>
-          
-          <div className="info-group">
-            <label>Username:</label>
-            <p>{user.username}</p>
+        <div className="profile-row profile-row--three">
+          <div className="profile-info">
+            <h2>Account Information</h2>
+            
+            <div className="info-group">
+              <label>Username: {user.username}</label>
+            </div>
+            
+            <div className="info-group">
+              <label>Email: {user.email}</label>
+            </div>
+            
+            <div className="info-group">
+              <label>Member Since: {new Date(user.createdAt).toLocaleDateString()}</label>
+            </div>
           </div>
           
-          <div className="info-group">
-            <label>Email:</label>
-            <p>{user.email}</p>
+          <div className="profile-info">
+            <h2>User Details</h2>
+            
+            <div className="info-group">
+              <label>Name: {user.name || 'Not specified'}</label>
+            </div>
+
+            <div className="info-group">
+              <label>Major: {user.major || 'Not specified'}</label>
+            </div>
+            
+            <div className="info-group">
+              <label>Year: {user.year || 'Not specified'}</label>
+            </div>
+            
+            <div className="info-group">
+              <label>Gender: {user.gender || 'Not specified'}</label>
+              {/* There can be an "other" option */}
+            </div>
           </div>
-          
-          <div className="info-group">
-            <label>Member Since:</label>
-            <p>{new Date(user.createdAt).toLocaleDateString()}</p>
+
+          <div className="profile-info">
+            <h2>Bio</h2>
+            {user.goals ? (
+              <div className="info-group">
+                <p>{user.goals}</p>
+              </div>
+            ) : (
+              <div className="info-group">
+                <p className="prompt">Tell us about yourself!</p>
+              </div>
+            )}
           </div>
         </div>
-        
-        <div className="profile-orders">
-          <h2>Order History</h2>
+
+        <div className="profile-row profile-row--two">
+          <div className="profile-info">
+            <h2>Roommate Preferences</h2>
+            
+            <div className="info-group">
+              <label>Sleep Schedule: {user.sleepSchedule || 'Not specified'}</label>
+            </div>
+            
+            <div className="info-group">
+              <label>Cleanliness: {user.cleanliness || 'Not specified'}</label>
+            </div>
+            
+            <div className="info-group">
+              <label>Visitor Policy: {user.visitorPolicy || user.vistors || user.visitors || 'Not specified'}</label>
+            </div>
+            
+            <div className="info-group">
+              <label>Shared or Separate Items: {user.items || 'Not specified'}</label>
+            </div>
+            
+            <div className="info-group">
+              <label>Pets: {user.pets || 'Not specified'}</label>
+            </div>
+            
+            <div className="info-group">
+              <label>Allergies: {user.allergies || 'Not specified'}</label>
+            </div>
+            
+            <div className="info-group">
+              <label>On-Campus or Off-Campus: {user.campusSelection || 'Not specified'}</label>
+            </div>
+            
+            <div className="info-group">
+              <label>Partier/Homebody: {user.socialBattery || 'Not specified'}</label>
+            </div>
+            
+            <div className="info-group">
+              <label>Hobbies: {user.hobbies || 'Not specified'}</label>
+            </div>
+
+            <Link to="/survey?section=roommate" className="edit-profile-btn">
+              Edit Roommate Preferences
+            </Link>
+          </div>
           
-          {orders.length === 0 ? (
-            <div className="no-orders">
-              <p>You haven't placed any orders yet.</p>
-              <Link to="/products" className="shop-now-btn">Shop Now</Link>
+          <div className="profile-info">
+            <h2>Study Preferences</h2>
+            
+            <div className="info-group">
+              <label>Current Classes: {user.currentClasses || user.currentCourses || 'Not specified'}</label>
             </div>
-          ) : (
-            <div className="orders-list">
-              {orders.map(order => (
-                <div key={order._id} className="order-card">
-                  <div className="order-header">
-                    <div>
-                      <h3>Order #{order._id.substr(-6)}</h3>
-                      <p className="order-date">
-                        {new Date(order.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="order-status">
-                      <span className={`status-badge ${order.status}`}>
-                        {order.status}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div className="order-items">
-                    <p>{order.items.length} item(s)</p>
-                    <p className="order-total">${order.totalPrice.toFixed(2)}</p>
-                  </div>
-                  
-                  <Link to={`/order-success/${order._id}`} className="view-order-btn">
-                    View Details
-                  </Link>
-                </div>
-              ))}
+
+            <div className="info-group">
+              <label>Study Goals: {user.studyGoals || 'Not specified'}</label>
             </div>
-          )}
+            
+            <div className="info-group">
+              <label>Honors/Special Programs: {user.honors || user.specialPrograms || 'Not specified'}</label>
+            </div>
+            
+            <div className="info-group">
+              <label>Study Location: {user.studyLocation || 'Not specified'}</label>
+            </div>
+            
+            <div className="info-group">
+              <label>Study Times: {user.studyTimes || 'Not specified'}</label>
+            </div>
+            
+            <div className="info-group">
+              <label>Ideal Group Size: {user.idealGroupSize || 'Not specified'}</label>
+            </div>
+            
+            <div className="info-group">
+              <label>Virtual or In-Person: {user.virtualOrInPerson || user.studyMode || 'Not specified'}</label>
+            </div>
+            
+            <div className="info-group">
+              <label>Study Habits: {user.studyHabits || 'Not specified'}</label>
+            </div>
+            
+            <div className="info-group">
+              <label>Study Style: {user.studyStyle || 'Not specified'}</label>
+            </div>
+
+            <Link to="/survey?section=study" className="edit-profile-btn">
+              Edit Study Preferences
+            </Link>
+          </div>
+        </div>
+
+        <div className="profile-row profile-row--center">
+          <div className="profile-info">
+            <h2>Additional Information</h2>
+              <div className="info-group">
+                <p className="prompt">Empty Container</p>
+              </div>
+          </div>
         </div>
       </div>
     </div>

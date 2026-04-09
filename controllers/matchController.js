@@ -85,10 +85,58 @@ const getUserProfile = async (req, res) => {
 const updateProfile = async (req, res) => {
   try {
     const userId = req.user._id;
-    const { major, year, interests, experience, goals } = req.body;
+    const {
+      major,
+      year,
+      interests,
+      experience,
+      goals,
+      sleepSchedule,
+      cleanliness,
+      visitorPolicy,
+      items,
+      pets,
+      allergies,
+      campusSelection,
+      socialBattery,
+      hobbies,
+      currentClasses,
+      studyGoals,
+      honors,
+      studyLocation,
+      studyTimes,
+      idealGroupSize,
+      virtualOrInPerson,
+      studyHabits,
+      studyStyle
+    } = req.body;
     
     console.log('Updating profile for user:', userId);
-    console.log('Profile data:', { major, year, interests, experience, goals });
+    console.log('Profile data:', {
+      major,
+      year,
+      interests,
+      experience,
+      goals,
+      sleepSchedule,
+      cleanliness,
+      visitorPolicy,
+      items,
+      pets,
+      allergies,
+      campusSelection,
+      socialBattery,
+      hobbies,
+      currentClasses,
+      studyGoals,
+      honors,
+      studyLocation,
+      studyTimes,
+      idealGroupSize,
+      virtualOrInPerson,
+      studyHabits,
+      studyStyle
+    });
 
     const user = await User.findByIdAndUpdate(
       userId,
@@ -97,7 +145,25 @@ const updateProfile = async (req, res) => {
         year,
         interests,
         experience,
-        goals
+        goals,
+        sleepSchedule,
+        cleanliness,
+        visitorPolicy,
+        items,
+        pets,
+        allergies,
+        campusSelection,
+        socialBattery,
+        hobbies,
+        currentClasses,
+        studyGoals,
+        honors,
+        studyLocation,
+        studyTimes,
+        idealGroupSize,
+        virtualOrInPerson,
+        studyHabits,
+        studyStyle
       },
       { new: true, runValidators: true }
     ).select('-password');
