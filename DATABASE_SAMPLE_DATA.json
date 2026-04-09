@@ -1,0 +1,308 @@
+{
+  "database": "matchmajor",
+  "exported": "2024-01-20",
+  "collections": {
+    "users": [
+      {
+        "_id": "507f1f77bcf86cd799439011",
+        "username": "alex_cs2024",
+        "email": "alex@university.edu",
+        "password": "$2a$12$...[hashed]...",
+        "profilePhoto": "https://example.com/photos/alex.jpg",
+        "role": "user",
+        "major": "Computer Science",
+        "year": "Senior",
+        "interests": ["machine learning", "web development", "open source"],
+        "experience": "Advanced",
+        "goals": "Secure internship in AI",
+        "currentClasses": "Design Patterns, Data Structures, AI Fundamentals",
+        "studyGoals": "Master design patterns and algorithms",
+        "honors": "Yes",
+        "studyLocation": "Library or quiet cafe",
+        "studyTimes": "Weekday evenings 6-9pm",
+        "idealGroupSize": "2-3 people",
+        "virtualOrInPerson": "In-person preferred",
+        "studyHabits": "Active recall and spaced repetition",
+        "studyStyle": "Visual learner with coding practice",
+        "sleepSchedule": "Night Owl",
+        "cleanliness": "Tidy",
+        "socialBattery": "Moderate",
+        "campusSelection": "Main campus",
+        "visitorPolicy": "Visitors welcome weekends",
+        "items": "Whiteboard, desk lamp, coffee maker",
+        "pets": "No pets",
+        "allergies": "Peanut allergy",
+        "hobbies": "Coding, gaming, photography",
+        "orders": [],
+        "createdAt": "2024-01-15T10:30:00Z",
+        "updatedAt": "2024-01-20T14:45:00Z"
+      },
+      {
+        "_id": "507f1f77bcf86cd799439012",
+        "username": "jordan_bio",
+        "email": "jordan@university.edu",
+        "password": "$2a$12$...[hashed]...",
+        "profilePhoto": "https://example.com/photos/jordan.jpg",
+        "role": "user",
+        "major": "Biology",
+        "year": "Junior",
+        "interests": ["genetics", "ecology", "research"],
+        "experience": "Intermediate",
+        "goals": "Get accepted to grad school",
+        "currentClasses": "Molecular Biology, Ecology, Biochemistry",
+        "studyGoals": "Understand complex biochemical pathways",
+        "honors": "Yes",
+        "studyLocation": "Science library or study halls",
+        "studyTimes": "Weekday mornings and afternoons",
+        "idealGroupSize": "3-4 people",
+        "virtualOrInPerson": "Either works",
+        "studyHabits": "Note-taking and group discussion",
+        "studyStyle": "Auditory learner",
+        "sleepSchedule": "Early Bird",
+        "cleanliness": "Very Tidy",
+        "socialBattery": "High",
+        "campusSelection": "Main campus",
+        "visitorPolicy": "Visitors welcome anytime",
+        "items": "Books, notebooks, scientific calculator",
+        "pets": "Cat",
+        "allergies": "None",
+        "hobbies": "Hiking, reading, volunteering",
+        "orders": [],
+        "createdAt": "2024-01-10T08:15:00Z",
+        "updatedAt": "2024-01-19T11:20:00Z"
+      },
+      {
+        "_id": "507f1f77bcf86cd799439013",
+        "username": "admin_user",
+        "email": "admin@matchmajor.edu",
+        "password": "$2a$12$...[hashed]...",
+        "profilePhoto": "https://example.com/photos/admin.jpg",
+        "role": "admin",
+        "major": "Computer Science",
+        "year": "Graduate",
+        "interests": ["education", "community building"],
+        "experience": "Expert",
+        "goals": "Build thriving study community",
+        "orders": [],
+        "createdAt": "2024-01-01T00:00:00Z",
+        "updatedAt": "2024-01-20T16:00:00Z"
+      }
+    ],
+    "products": [
+      {
+        "_id": "607f1f77bcf86cd799439021",
+        "name": "Study Bundle Pro",
+        "description": "Complete study package with collaboration tools and resources. Includes unlimited group chats, shared notes workspace, schedule coordinator, and resource library access.",
+        "price": 49.99,
+        "category": "Bundle",
+        "image": "https://example.com/products/study-bundle.jpg",
+        "features": [
+          "Unlimited group chats",
+          "Shared notes workspace",
+          "Schedule coordinator",
+          "Resource library access",
+          "Priority support"
+        ],
+        "inStock": true,
+        "createdAt": "2024-01-10T08:00:00Z",
+        "updatedAt": "2024-01-10T08:00:00Z"
+      },
+      {
+        "_id": "607f1f77bcf86cd799439022",
+        "name": "Noise-Canceling Headphones",
+        "description": "Premium noise-canceling headphones for focused study sessions. Active noise cancellation with 30-hour battery life.",
+        "price": 199.99,
+        "category": "Hardware",
+        "image": "https://example.com/products/headphones.jpg",
+        "features": [
+          "Active noise cancellation",
+          "30-hour battery life",
+          "Bluetooth 5.0",
+          "Comfortable fit for long sessions"
+        ],
+        "inStock": true,
+        "createdAt": "2024-01-05T10:00:00Z",
+        "updatedAt": "2024-01-05T10:00:00Z"
+      },
+      {
+        "_id": "607f1f77bcf86cd799439023",
+        "name": "Notion Study Template Pack",
+        "description": "Ready-to-use Notion templates for organizing study materials, class notes, and project management.",
+        "price": 14.99,
+        "category": "Software",
+        "image": "https://example.com/products/notion-template.jpg",
+        "features": [
+          "Class schedule template",
+          "Note-taking system",
+          "Assignment tracker",
+          "Grade calculator",
+          "Study timer"
+        ],
+        "inStock": true,
+        "createdAt": "2024-01-08T14:30:00Z",
+        "updatedAt": "2024-01-08T14:30:00Z"
+      },
+      {
+        "_id": "607f1f77bcf86cd799439024",
+        "name": "1-on-1 Study Session",
+        "description": "One-hour personalized tutoring or study session with an experienced student mentor.",
+        "price": 29.99,
+        "category": "Service",
+        "image": "https://example.com/products/tutoring.jpg",
+        "features": [
+          "Personalized session",
+          "Choose your mentor",
+          "Flexible scheduling",
+          "Online or in-person"
+        ],
+        "inStock": true,
+        "createdAt": "2024-01-12T09:00:00Z",
+        "updatedAt": "2024-01-12T09:00:00Z"
+      },
+      {
+        "_id": "607f1f77bcf86cd799439025",
+        "name": "USB-C Hub with Multiple Ports",
+        "description": "Multi-port USB-C hub for connecting multiple devices during study sessions.",
+        "price": 39.99,
+        "category": "Accessory",
+        "image": "https://example.com/products/usb-hub.jpg",
+        "features": [
+          "7 USB ports",
+          "HDMI output",
+          "SD card reader",
+          "Power delivery"
+        ],
+        "inStock": true,
+        "createdAt": "2024-01-07T11:20:00Z",
+        "updatedAt": "2024-01-07T11:20:00Z"
+      }
+    ],
+    "orders": [
+      {
+        "_id": "707f1f77bcf86cd799439031",
+        "user": "507f1f77bcf86cd799439011",
+        "items": [
+          {
+            "product": "607f1f77bcf86cd799439021",
+            "name": "Study Bundle Pro",
+            "price": 49.99,
+            "quantity": 1
+          }
+        ],
+        "shippingAddress": {
+          "street": "123 Main St, Apt 4B",
+          "city": "Boston",
+          "state": "MA",
+          "zipCode": "02101",
+          "country": "USA"
+        },
+        "paymentMethod": "creditCard",
+        "paymentResult": {
+          "id": "pi_1234567890",
+          "status": "succeeded",
+          "email": "alex@university.edu"
+        },
+        "totalPrice": 49.99,
+        "status": "processing",
+        "createdAt": "2024-01-20T15:30:00Z",
+        "updatedAt": "2024-01-20T15:32:00Z"
+      },
+      {
+        "_id": "707f1f77bcf86cd799439032",
+        "user": "507f1f77bcf86cd799439012",
+        "items": [
+          {
+            "product": "607f1f77bcf86cd799439022",
+            "name": "Noise-Canceling Headphones",
+            "price": 199.99,
+            "quantity": 1
+          },
+          {
+            "product": "607f1f77bcf86cd799439025",
+            "name": "USB-C Hub with Multiple Ports",
+            "price": 39.99,
+            "quantity": 1
+          }
+        ],
+        "shippingAddress": {
+          "street": "456 Oak Avenue",
+          "city": "Cambridge",
+          "state": "MA",
+          "zipCode": "02138",
+          "country": "USA"
+        },
+        "paymentMethod": "creditCard",
+        "paymentResult": {
+          "id": "pi_0987654321",
+          "status": "succeeded",
+          "email": "jordan@university.edu"
+        },
+        "totalPrice": 239.98,
+        "status": "shipped",
+        "createdAt": "2024-01-18T10:15:00Z",
+        "updatedAt": "2024-01-19T14:22:00Z"
+      },
+      {
+        "_id": "707f1f77bcf86cd799439033",
+        "user": "507f1f77bcf86cd799439011",
+        "items": [
+          {
+            "product": "607f1f77bcf86cd799439023",
+            "name": "Notion Study Template Pack",
+            "price": 14.99,
+            "quantity": 2
+          },
+          {
+            "product": "607f1f77bcf86cd799439024",
+            "name": "1-on-1 Study Session",
+            "price": 29.99,
+            "quantity": 3
+          }
+        ],
+        "shippingAddress": null,
+        "paymentMethod": "creditCard",
+        "paymentResult": {
+          "id": "pi_1111111111",
+          "status": "succeeded",
+          "email": "alex@university.edu"
+        },
+        "totalPrice": 119.95,
+        "status": "delivered",
+        "createdAt": "2024-01-15T08:45:00Z",
+        "updatedAt": "2024-01-17T16:30:00Z"
+      }
+    ],
+    "carts": [
+      {
+        "_id": "807f1f77bcf86cd799439041",
+        "user": "507f1f77bcf86cd799439011",
+        "items": [
+          {
+            "product": "607f1f77bcf86cd799439022",
+            "quantity": 1
+          },
+          {
+            "product": "607f1f77bcf86cd799439023",
+            "quantity": 2
+          }
+        ],
+        "total": 229.97,
+        "createdAt": "2024-01-20T15:30:00Z",
+        "updatedAt": "2024-01-20T15:45:00Z"
+      },
+      {
+        "_id": "807f1f77bcf86cd799439042",
+        "user": "507f1f77bcf86cd799439012",
+        "items": [
+          {
+            "product": "607f1f77bcf86cd799439024",
+            "quantity": 4
+          }
+        ],
+        "total": 119.96,
+        "createdAt": "2024-01-19T13:20:00Z",
+        "updatedAt": "2024-01-20T09:15:00Z"
+      }
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "exportDate": "2026-04-09T22:35:15.788Z",
+  "database": "mongodb://localhost:27017/matchmajor",
+  "collections": {
+    "users": 1,
+    "products": 0,
+    "orders": 0,
+    "carts": 0
+  },
+  "files": {
+    "users": "users.json",
+    "products": "products.json",
+    "orders": "orders.json",
+    "carts": "carts.json"
+  },
+  "total": 1
+}

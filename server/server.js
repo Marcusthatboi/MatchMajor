@@ -9,7 +9,7 @@ const rateLimit = require('express-rate-limit');
 const path = require('path');
 
 // Load environment variables
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 // Import routes
 const authRoutes = require('../routes/authRoutes');
