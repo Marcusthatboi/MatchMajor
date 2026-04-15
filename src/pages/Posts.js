@@ -9,6 +9,9 @@ const initialPosts = [
 
 const Posts = () => {
   const [posts, setPosts] = useState(initialPosts);
+  const [showModal, setShowModal] = useState(false);
+  const [newAuthor, setNewAuthor] = useState('');
+  const [newContent, setNewContent] = useState('');
 
   const handleLike = (id) => {
     setPosts((prev) => prev.map((post) => (
@@ -16,9 +19,28 @@ const Posts = () => {
     )));
   };
 
+  const openCreate = () => setShowModal(true);
+
+  const handleSubmitPost = (e) => {
+    e.preventDefault();
+    const content = newContent.trim();
+    if (!content) return;
+    const author = newAuthor.trim() || 'Anonymous';
+    const newPost = { id: Date.now(), author, content, likes: 0 };
+    setPosts((prev) => [newPost, ...prev]);
+    setNewAuthor('');
+    setNewContent('');
+    setShowModal(false);
+  };
+
   return (
     <div className="posts-page">
+      <div className="posts-topbar">
+        <button className="create-post-btn" onClick={openCreate}>+ Create Post</button>
+      </div>
+
       <h1>Community Posts</h1>
+
       <div className="post-list">
         {posts.map((post) => (
           <article key={post.id} className="post-card">
@@ -30,6 +52,35 @@ const Posts = () => {
           </article>
         ))}
       </div>
+
+      {showModal && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Create Post</h2>
+            <form onSubmit={handleSubmitPost} className="create-post-form">
+              <input
+                className="create-input"
+                placeholder="Your name (optional)"
+                value={newAuthor}
+                onChange={(e) => setNewAuthor(e.target.value)}
+                maxLength={60}
+              />
+              <textarea
+                className="create-textarea"
+                placeholder="What's on your mind?"
+                value={newContent}
+                onChange={(e) => setNewContent(e.target.value)}
+                rows={5}
+                maxLength={1000}
+              />
+              <div className="modal-actions">
+                <button type="button" className="btn cancel" onClick={() => setShowModal(false)}>Cancel</button>
+                <button type="submit" className="btn submit">Post</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

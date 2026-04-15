@@ -40,3 +40,84 @@
   border-radius: 5px;
   cursor: pointer;
 }
+
+/* Top bar for create button */
+.posts-topbar {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 12px;
+}
+
+.create-post-btn {
+  background: var(--gold);
+  color: var(--brown);
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+/* Modal styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 92%;
+  max-width: 520px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+}
+
+.create-post-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.create-input,
+.create-textarea {
+  border: 1px solid #e5e5e5;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.btn {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+}
+
+.btn.cancel {
+  background: #f3f3f3;
+  color: #444;
+}
+
+.btn.submit {
+  background: var(--gold);
+  color: var(--brown);
+}
