@@ -11,7 +11,7 @@ const Products = () => {
       try {
         const { data } = await getProducts();
         setProducts(data);
-      } catch (err) {
+      } catch (err) { 
         console.error(err);
       } finally {
         setLoading(false);

@@ -2,7 +2,7 @@
 
 ## What Was Created
 
-Your MatchMajor application has been fully containerized for both development and production environments.
+ MatchMajor application has been fully containerized for both development and production environments.
 
 ### Files Created
 

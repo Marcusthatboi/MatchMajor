@@ -7,7 +7,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm install
 
 # Copy source
 COPY public ./public
@@ -25,7 +25,7 @@ WORKDIR /app
 COPY server/package*.json ./server/
 
 # Install backend dependencies
-RUN cd server && npm ci --omit=dev
+RUN cd server && npm install --omit=dev
 
 # Copy backend source
 COPY server ./server

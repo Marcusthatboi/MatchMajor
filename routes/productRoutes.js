@@ -5,8 +5,8 @@ const {
   getProducts, 
   getProduct, 
   createProduct, 
-  updateProduct, 
-  deleteProduct 
+  updateProduct,
+  deleteProduct
 } = require('../controllers/productController');
 const { protect, restrictTo } = require('../middleware/authMiddleware');
 

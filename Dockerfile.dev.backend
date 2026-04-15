@@ -1,21 +1,23 @@
 # Development Dockerfile for Backend
 FROM node:18-alpine
 
-WORKDIR /app
+WORKDIR /app/server
 
 # Copy package files
 COPY server/package*.json ./
 
 # Install all dependencies (including dev)
-RUN npm ci
+RUN npm install
 
-# Copy source files
+# Copy server files
 COPY server ./
-COPY config ../config
-COPY controllers ../controllers
-COPY routes ../routes
-COPY middleware ../middleware
-COPY models ../models
+
+# Copy other required modules into server subdirectories
+COPY config ./config
+COPY controllers ./controllers
+COPY routes ./routes
+COPY middleware ./middleware
+COPY models ./models
 
 # Install nodemon globally for development
 RUN npm install -g nodemon
