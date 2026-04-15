@@ -22,13 +22,13 @@
 
 .login-page input {
   padding: 12px;
-  border: 1px solid #ddd;
+  border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 4px;
   font-size: 1rem;
 }
 
 .login-page input:focus {
-  border-color: var(--primary-cyan);
+  border-color: rgba(9, 166, 173, 0.8);
   outline: none;
 }
 

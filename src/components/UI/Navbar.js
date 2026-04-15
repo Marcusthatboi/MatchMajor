@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { logout } from '../../api/auth';
+import logo from '../../images/MatchMajor logo HZ.png';
 import './Navbar.css';
 
 const Navbar = ({ user, setUser }) => {
@@ -20,7 +21,7 @@ const Navbar = ({ user, setUser }) => {
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/" className="navbar-logo">
-          MatchMajor
+          <img src={logo} alt="MatchMajor logo" className="navbar-logo-image" />
         </Link>
         
         <div className="navbar-links">

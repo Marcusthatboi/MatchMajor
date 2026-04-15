@@ -13,15 +13,15 @@
 }
 
 .navbar-logo {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: var(--brown);
+  display: inline-flex;
+  align-items: center;
   text-decoration: none;
-  transition: color 0.3s;
 }
 
-.navbar-logo:hover {
-  color: var(--gold);
+.navbar-logo-image {
+  max-height: 50px;
+  width: auto;
+  display: block;
 }
 
 .navbar-links {

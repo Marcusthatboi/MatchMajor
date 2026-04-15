@@ -1,6 +1,7 @@
 .survey-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, var(--primary-cyan), var(--cyan-light));
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(10px);
   padding: 40px 20px;
   display: flex;
   align-items: center;
@@ -51,7 +52,7 @@
 .form-group select,
 .form-group textarea {
   padding: 12px;
-  border: 2px solid #e0e0e0;
+  border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 6px;
   font-size: 1rem;
   transition: border-color 0.3s;
@@ -60,7 +61,7 @@
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: var(--primary-cyan);
+  border-color: rgba(0, 0, 0, 0.24);
 }
 
 .checkbox-group {
