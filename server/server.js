@@ -18,6 +18,9 @@ const cartRoutes = require('../routes/cartRoutes');
 const orderRoutes = require('../routes/orderRoutes');
 const matchRoutes = require('../routes/matchRoutes');
 const surveyRoutes = require('../routes/surveyRoutes');
+const chatroomRoutes = require('../routes/chatroomRoutes');
+const messageRoutes = require('../routes/messageRoutes');
+const postRoutes = require('../routes/postRoutes');
 
 // Connect to database
 const connectDB = require('../config/db');
@@ -54,6 +57,9 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/matches', matchRoutes);
 app.use('/api/survey', surveyRoutes);
+app.use('/api/chatrooms', chatroomRoutes);
+app.use('/api/messages', messageRoutes);
+app.use('/api/posts', postRoutes);
 
 // Serve static files from build folder in production
 if (process.env.NODE_ENV === 'production') {

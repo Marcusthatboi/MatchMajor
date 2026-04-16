@@ -1,51 +1,65 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../api/auth';
+import { login as apiLogin } from '../api/auth';
+import { useUser } from '../context/UserContext';
 import './Login.css';
 
-const Login = ({ setUser }) => {
+const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useUser();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setIsLoading(true);
+    
     try {
-      const response = await login(email, password);
-      if (response.success) {
-        setUser(response.user);
+      const response = await apiLogin(email, password);
+      if (response.success && response.user) {
+        login(response.user);
         navigate('/survey');
       } else {
         setError(response.message || 'Login failed');
       }
     } catch (err) {
-      setError('Login failed');
+      console.error('Login error:', err);
+      setError(err.response?.data?.message || 'Login failed. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
-  };
-
-  const handleBypass = () => {
-    // Set a dummy user for testing
-    const dummyUser = {
-      _id: 'bypass-user',
-      username: 'TestUser',
-      email: 'test@example.com',
-      role: 'user'
-    };
-    setUser(dummyUser);
-    navigate('/survey');
   };
 
   return (
     <div className="page login-page">
       <h2>Login</h2>
       <form onSubmit={handleSubmit}>
-        <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email or Username" />
-        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
-        <button type="submit">Login</button>
+        <input 
+          value={email} 
+          onChange={(e) => setEmail(e.target.value)} 
+          placeholder="Email or Username"
+          disabled={isLoading}
+          required
+        />
+        <input 
+          type="password" 
+          value={password} 
+          onChange={(e) => setPassword(e.target.value)} 
+          placeholder="Password"
+          disabled={isLoading}
+          required
+        />
+        <button type="submit" disabled={isLoading}>
+          {isLoading ? 'Logging in...' : 'Login'}
+        </button>
       </form>
-      <button onClick={handleBypass} className="bypass-btn">Bypass Login (For Testing)</button>
       {error && <p className="error">{error}</p>}
+      <p style={{ marginTop: '15px', textAlign: 'center' }}>
+        Don't have an account? <a href="/register" style={{ color: 'var(--primary-cyan)', textDecoration: 'underline' }}>Register here</a>
+      </p>
     </div>
   );
 };

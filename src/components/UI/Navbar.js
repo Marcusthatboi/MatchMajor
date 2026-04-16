@@ -1,16 +1,21 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { logout } from '../../api/auth';
+import { useUser } from '../../context/UserContext';
 import logo from '../../images/MatchMajor logo HZ.png';
 import './Navbar.css';
 
-const Navbar = ({ user, setUser }) => {
+const Navbar = ({ logoutHandler }) => {
   const navigate = useNavigate();
+  const { user, logout: contextLogout } = useUser();
 
+  // Use the provided logout handler or fall back to context logout
   const handleLogout = async () => {
     try {
-      await logout();
-      setUser(null);
+      if (logoutHandler) {
+        await logoutHandler();
+      } else {
+        await contextLogout();
+      }
       navigate('/login');
     } catch (error) {
       console.error('Failed to logout:', error);
@@ -20,24 +25,38 @@ const Navbar = ({ user, setUser }) => {
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        <Link to="/" className="navbar-logo">
-          <img src={logo} alt="MatchMajor logo" className="navbar-logo-image" />
-        </Link>
+        {user ? (
+          <Link to="/" className="navbar-logo">
+            <img src={logo} alt="MatchMajor logo" className="navbar-logo-image" />
+          </Link>
+        ) : (
+          <div className="navbar-logo">
+            <img src={logo} alt="MatchMajor logo" className="navbar-logo-image" />
+          </div>
+        )}
         
-        <div className="navbar-links">
-          <Link to="/" className="nav-link">Home</Link>
-          <Link to="/matches" className="nav-link">Matches</Link>
-          <Link to="/posts" className="nav-link">Posts</Link>
-          <Link to="/chat" className="nav-link">Chatroom</Link>
-        </div>
+        {user && (
+          <div className="navbar-links">
+            <Link to="/" className="nav-link">Home</Link>
+            <Link to="/matches" className="nav-link">Matches</Link>
+            <Link to="/posts" className="nav-link">Posts</Link>
+            <Link to="/chat" className="nav-link">Chatroom</Link>
+            <Link to="/products" className="nav-link">Products</Link>
+          </div>
+        )}
         
         <div className="navbar-auth">
           {user ? (
             <>
+              <Link to="/cart" className="cart-link">
+                <i className="fas fa-shopping-cart"></i>
+                Cart
+              </Link>
               <div className="user-menu">
                 <span className="username">Hi, {user.username}</span>
                 <div className="dropdown-content">
                   <Link to="/profile" className="dropdown-item">Profile</Link>
+                  <Link to="/cart" className="dropdown-item">Cart & Orders</Link>
                   <button onClick={handleLogout} className="dropdown-item logout-btn">
                     Logout
                   </button>
