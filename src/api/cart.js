@@ -1,20 +1,13 @@
-// client/src/api/cart.js
-import axios from 'axios';
-
-axios.defaults.withCredentials = true;
-
-const API_URL = process.env.NODE_ENV === 'production' 
-  ? '/api/cart' 
-  : 'http://localhost:5000/api/cart';
+// Centralized API client for cart operations
+import { api } from './index';
 
 /**
  * Get current user's cart
  */
 export const getCart = async () => {
   try {
-    console.log('Fetching cart...');
-    const response = await axios.get(API_URL);
-    return response.data;
+    const response = await api.get('/cart');
+    return response;
   } catch (error) {
     console.error('Get cart error:', error);
     throw error;
@@ -26,9 +19,8 @@ export const getCart = async () => {
  */
 export const addToCart = async (productId, quantity = 1) => {
   try {
-    console.log('Adding to cart - productId:', productId, 'quantity:', quantity);
-    const response = await axios.post(`${API_URL}/add`, { productId, quantity });
-    return response.data;
+    const response = await api.post('/cart/add', { productId, quantity });
+    return response;
   } catch (error) {
     console.error('Add to cart error:', error);
     throw error;
@@ -40,9 +32,8 @@ export const addToCart = async (productId, quantity = 1) => {
  */
 export const updateCartItem = async (productId, quantity) => {
   try {
-    console.log('Updating cart item - productId:', productId, 'quantity:', quantity);
-    const response = await axios.put(`${API_URL}/update`, { productId, quantity });
-    return response.data;
+    const response = await api.put('/cart/update', { productId, quantity });
+    return response;
   } catch (error) {
     console.error('Update cart item error:', error);
     throw error;
@@ -54,9 +45,8 @@ export const updateCartItem = async (productId, quantity) => {
  */
 export const removeFromCart = async (productId) => {
   try {
-    console.log('Removing from cart - productId:', productId);
-    const response = await axios.delete(`${API_URL}/item/${productId}`);
-    return response.data;
+    const response = await api.delete(`/cart/item/${productId}`);
+    return response;
   } catch (error) {
     console.error('Remove from cart error:', error);
     throw error;
@@ -68,13 +58,10 @@ export const removeFromCart = async (productId) => {
  */
 export const clearCart = async () => {
   try {
-    console.log('Clearing cart...');
-    const response = await axios.delete(`${API_URL}/clear`);
-    return response.data;
+    const response = await api.delete('/cart/clear');
+    return response;
   } catch (error) {
     console.error('Clear cart error:', error);
     throw error;
   }
-};
-
 };

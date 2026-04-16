@@ -7,15 +7,16 @@ const {
   updateCartItem, 
   removeFromCart,
   clearCart 
-} = require('../controllers/cartController');
-const { protect } = require('../middleware/authMiddleware');
+} = require('../controllers/cartController_enhanced');
+const { protect, validateCSRFToken } = require('../middleware/authMiddleware_enhanced');
 
-router.use(protect); // All cart routes require authentication
+// === ALL CART ROUTES REQUIRE AUTHENTICATION ===
+router.use(protect);
 
 router.get('/', getCart);
-router.post('/add', addToCart);
-router.put('/update', updateCartItem);
-router.delete('/item/:productId', removeFromCart);
-router.delete('/clear', clearCart);
+router.post('/add', validateCSRFToken, addToCart);
+router.put('/update', validateCSRFToken, updateCartItem);
+router.delete('/item/:productId', validateCSRFToken, removeFromCart);
+router.delete('/clear', validateCSRFToken, clearCart);
 
 module.exports = router;

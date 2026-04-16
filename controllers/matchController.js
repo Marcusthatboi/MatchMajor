@@ -1,5 +1,6 @@
 // server/controllers/matchController.js
 const User = require('../models/User');
+const Survey = require('../models/Survey');
 const { getMatchedUsers } = require('../server/utils/matchingAlgorithm');
 
 /**
@@ -52,11 +53,10 @@ const getMatches = async (req, res) => {
       }))
     });
   } catch (error) {
-    console.error('Error getting matches:', error);
     res.status(500).json({ 
       success: false, 
       message: 'Failed to get matches',
-      error: error.message 
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -100,12 +100,6 @@ const updateProfile = async (req, res) => {
   try {
     const userId = req.user._id;
     const surveyData = req.body;
-    
-    console.log('Updating survey for user:', userId);
-    console.log('Survey data:', surveyData);
-
-    // Import Survey model here to avoid circular dependencies
-    const Survey = require('../models/Survey');
 
     // Check if survey already exists
     let survey = await Survey.findOne({ userId });
@@ -127,8 +121,6 @@ const updateProfile = async (req, res) => {
       // Link survey to user
       await User.findByIdAndUpdate(userId, { survey: survey._id });
     }
-    
-    console.log('Survey updated successfully');
 
     res.json({
       success: true,

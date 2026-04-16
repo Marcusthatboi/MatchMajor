@@ -7,15 +7,16 @@ const {
   createProduct, 
   updateProduct,
   deleteProduct
-} = require('../controllers/productController');
-const { protect, restrictTo } = require('../middleware/authMiddleware');
+} = require('../controllers/productController_enhanced');
+const { protect, restrictTo, validateCSRFToken } = require('../middleware/authMiddleware_enhanced');
 
+// === PUBLIC ROUTES (read-only) ===
 router.get('/', getProducts);
 router.get('/:id', getProduct);
 
-// Admin routes
-router.post('/', protect, restrictTo('admin'), createProduct);
-router.put('/:id', protect, restrictTo('admin'), updateProduct);
-router.delete('/:id', protect, restrictTo('admin'), deleteProduct);
+// === PROTECTED ROUTES (admin only) ===
+router.post('/', protect, restrictTo('admin'), validateCSRFToken, createProduct);
+router.put('/:id', protect, restrictTo('admin'), validateCSRFToken, updateProduct);
+router.delete('/:id', protect, restrictTo('admin'), validateCSRFToken, deleteProduct);
 
 module.exports = router;

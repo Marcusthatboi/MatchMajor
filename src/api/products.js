@@ -1,21 +1,14 @@
-// client/src/api/products.js
-import axios from 'axios';
-
-axios.defaults.withCredentials = true;
-
-const API_URL = process.env.NODE_ENV === 'production' 
-  ? '/api/products' 
-  : 'http://localhost:5000/api/products';
+// Centralized API client for products
+import { api } from './index';
 
 /**
- * Get all products with optional filtering
+ * Get all products with optional filtering and caching
  */
 export const getProducts = async (category = '') => {
   try {
-    console.log('Fetching products...');
-    const url = category ? `${API_URL}?category=${category}` : API_URL;
-    const response = await axios.get(url);
-    return response.data;
+    const params = category ? { category } : {};
+    const response = await api.get('/products', { params });
+    return response;
   } catch (error) {
     console.error('Get products error:', error);
     throw error;
@@ -27,9 +20,8 @@ export const getProducts = async (category = '') => {
  */
 export const getProduct = async (productId) => {
   try {
-    console.log('Fetching product:', productId);
-    const response = await axios.get(`${API_URL}/${productId}`);
-    return response.data;
+    const response = await api.get(`/products/${productId}`);
+    return response;
   } catch (error) {
     console.error('Get product error:', error);
     throw error;
@@ -37,14 +29,8 @@ export const getProduct = async (productId) => {
 };
 
 /**
- * Refresh products list
+ * Refresh products list (skip cache)
  */
 export const refreshProducts = async () => {
-  return getProducts();
-};
-
-
-export const getProduct = async (id) => {
-  const response = await axios.get(`${API_URL}/${id}`);
-  return response.data;
+  return api.get('/products', { skipCache: true });
 };

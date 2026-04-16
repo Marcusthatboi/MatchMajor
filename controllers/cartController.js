@@ -24,10 +24,11 @@ exports.getCart = async (req, res) => {
       data: cart
     });
   } catch (error) {
-    console.error(error);
+    if (process.env.NODE_ENV === 'development') console.error(error);
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
+      ...(process.env.NODE_ENV === 'development' && { error: error.message })
     });
   }
 };
@@ -69,10 +70,15 @@ exports.addToCart = async (req, res) => {
       cart.items.push({ product: productId, quantity });
     }
     
-    // Calculate new total
-    cart.total = cart.items.reduce((total, item) => {
-      return total + (product.price * item.quantity);
-    }, 0);
+    // Recalculate total for all items
+    let total = 0;
+    for (let i = 0; i < cart.items.length; i++) {
+      const itemProduct = await Product.findById(cart.items[i].product);
+      if (itemProduct) {
+        total += itemProduct.price * cart.items[i].quantity;
+      }
+    }
+    cart.total = total;
     
     await cart.save();
     

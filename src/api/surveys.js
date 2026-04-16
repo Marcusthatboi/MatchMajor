@@ -1,26 +1,15 @@
-// client/src/api/surveys.js
-import axios from 'axios';
-
-// Configure axios to send cookies with requests
-axios.defaults.withCredentials = true;
-
-const API_URL = process.env.NODE_ENV === 'production' 
-  ? '/api/survey' 
-  : 'http://localhost:5000/api/survey';
+// Centralized API client for surveys
+import { api } from './index';
 
 /**
  * Create or update user survey
  */
 export const saveSurvey = async (surveyData) => {
   try {
-    const response = await axios.post(`${API_URL}`, surveyData);
-    return response.data;
+    const response = await api.post('/survey', surveyData, { skipCache: true });
+    return response;
   } catch (error) {
-    console.error('Save survey error:', {
-      message: error.message,
-      status: error.response?.status,
-      data: error.response?.data
-    });
+    console.error('Save survey error:', error);
     throw error;
   }
 };
@@ -30,14 +19,10 @@ export const saveSurvey = async (surveyData) => {
  */
 export const getSurvey = async () => {
   try {
-    const response = await axios.get(`${API_URL}`);
-    return response.data;
+    const response = await api.get('/survey');
+    return response;
   } catch (error) {
-    console.error('Get survey error:', {
-      message: error.message,
-      status: error.response?.status,
-      data: error.response?.data
-    });
+    console.error('Get survey error:', error);
     throw error;
   }
 };
@@ -47,14 +32,10 @@ export const getSurvey = async () => {
  */
 export const getUserSurvey = async (userId) => {
   try {
-    const response = await axios.get(`${API_URL}/${userId}`);
-    return response.data;
+    const response = await api.get(`/survey/${userId}`);
+    return response;
   } catch (error) {
-    console.error('Get user survey error:', {
-      message: error.message,
-      status: error.response?.status,
-      data: error.response?.data
-    });
+    console.error('Get user survey error:', error);
     throw error;
   }
 };
@@ -64,14 +45,10 @@ export const getUserSurvey = async (userId) => {
  */
 export const deleteSurvey = async () => {
   try {
-    const response = await axios.delete(`${API_URL}`);
-    return response.data;
+    const response = await api.delete('/survey', { skipCache: true });
+    return response;
   } catch (error) {
-    console.error('Delete survey error:', {
-      message: error.message,
-      status: error.response?.status,
-      data: error.response?.data
-    });
+    console.error('Delete survey error:', error);
     throw error;
   }
 };
@@ -81,14 +58,10 @@ export const deleteSurvey = async () => {
  */
 export const getAllSurveys = async () => {
   try {
-    const response = await axios.get(`${API_URL}/all`);
-    return response.data;
+    const response = await api.get('/survey/all');
+    return response;
   } catch (error) {
-    console.error('Get all surveys error:', {
-      message: error.message,
-      status: error.response?.status,
-      data: error.response?.data
-    });
+    console.error('Get all surveys error:', error);
     throw error;
   }
 };

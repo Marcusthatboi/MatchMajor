@@ -1,0 +1,52 @@
+# Netlify Configuration for Frontend Deployment
+# https://docs.netlify.com/configure-builds/file-based-configuration
+
+[build]
+  # Build command
+  command = "npm run build:prod"
+  
+  # Directory with the build output
+  publish = "build"
+  
+  # Environment to use for build
+  environment = { REACT_APP_ENV = "production" }
+
+[build.environment]
+  NODE_VERSION = "18.17.0"
+  NODE_ENV = "production"
+
+# Redirect all routes to index.html for React Router
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Cache headers for static assets
+[[headers]]
+  for = "/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=3600, must-revalidate"
+
+# API proxy (if needed)
+[[redirects]]
+  from = "/api/*"
+  to = "https://your-api-domain.com/api/:splat"
+  status = 200
+  force = false
+
+[context.production]
+  command = "npm run build:prod"
+  environment = { REACT_APP_ENV = "production" }
+
+[context.deploy-preview]
+  command = "npm run build"
+  environment = { REACT_APP_ENV = "staging" }
+
+[context.branch-deploy]
+  command = "npm run build"
+  environment = { REACT_APP_ENV = "staging" }

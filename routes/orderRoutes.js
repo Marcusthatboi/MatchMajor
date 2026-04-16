@@ -4,18 +4,22 @@ const router = express.Router();
 const { 
   createOrder, 
   getUserOrders, 
-  getOrderById, 
-  updateOrderStatus 
-} = require('../controllers/orderController');
-const { protect, restrictTo } = require('../middleware/authMiddleware');
+  getOrder,
+  updateOrderStatus,
+  cancelOrder
+} = require('../controllers/orderController_enhanced');
+const { protect, restrictTo, validateCSRFToken, checkResourceOwnership } = require('../middleware/authMiddleware_enhanced');
 
-router.use(protect); // All order routes require authentication
+// === ALL ORDER ROUTES REQUIRE AUTHENTICATION ===
+router.use(protect);
 
-router.post('/', createOrder);
-router.get('/myorders', getUserOrders);
-router.get('/:id', getOrderById);
+// === USER ROUTES ===
+router.post('/', validateCSRFToken, createOrder);
+router.get('/', getUserOrders);
+router.get('/:orderId', getOrder);
+router.post('/:orderId/cancel', validateCSRFToken, checkResourceOwnership('user'), cancelOrder);
 
-// Admin route
-router.put('/:id/status', restrictTo('admin'), updateOrderStatus);
+// === ADMIN ROUTES ===
+router.put('/:orderId/status', restrictTo('admin'), validateCSRFToken, updateOrderStatus);
 
 module.exports = router;

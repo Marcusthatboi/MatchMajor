@@ -1,0 +1,173 @@
+name: Build and Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+      - production
+  pull_request:
+    branches:
+      - main
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # ============================================
+  # Code Quality & Testing
+  # ============================================
+  quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test -- --coverage --watchAll=false
+
+      - name: Build frontend
+        run: npm run build:prod
+
+      - name: Check build folder
+        run: |
+          if [ ! -d "build" ]; then
+            echo "Build folder not found!"
+            exit 1
+          fi
+          echo "Build folder size: $(du -sh build | cut -f1)"
+
+  # ============================================
+  # Backend Quality & Build
+  # ============================================
+  backend-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install backend dependencies
+        run: cd server && npm install
+
+      - name: Lint backend code
+        run: cd server && npm run lint --if-present
+
+      - name: Run backend tests
+        run: cd server && npm test --if-present
+
+  # ============================================
+  # Docker Build & Push
+  # ============================================
+  docker:
+    runs-on: ubuntu-latest
+    needs: [quality, backend-quality]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
+
+  # ============================================
+  # Deploy to Production (Manual Approval)
+  # ============================================
+  deploy:
+    runs-on: ubuntu-latest
+    needs: docker
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://yourdomain.com
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Deploy to VPS
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts 2>/dev/null
+          ssh -i ~/.ssh/deploy_key $DEPLOY_USER@$DEPLOY_HOST "cd /home/app/matchmajor && bash deploy-vps.sh production"
+
+      - name: Health Check
+        run: |
+          for i in {1..30}; do
+            if curl -f https://yourdomain.com/api/health; then
+              echo "Health check passed"
+              exit 0
+            fi
+            echo "Waiting for API... ($i/30)"
+            sleep 2
+          done
+          exit 1
+
+      - name: Notify Success
+        uses: 8398a7/action-slack@v3
+        if: success()
+        with:
+          status: success
+          text: 'Deployment to production succeeded'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: Notify Failure
+        uses: 8398a7/action-slack@v3
+        if: failure()
+        with:
+          status: failure
+          text: 'Deployment to production failed'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}

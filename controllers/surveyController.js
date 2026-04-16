@@ -38,11 +38,11 @@ exports.createOrUpdateSurvey = async (req, res) => {
       survey
     });
   } catch (error) {
-    console.error(error);
+    if (process.env.NODE_ENV === 'development') console.error(error);
     res.status(500).json({
       success: false,
       message: 'Error creating/updating survey',
-      error: error.message
+      ...(process.env.NODE_ENV === 'development' && { error: error.message })
     });
   }
 };

@@ -1,36 +1,39 @@
-// client/src/api/auth.js
-import axios from 'axios';
-
-// Configure axios to send cookies with requests
-axios.defaults.withCredentials = true;
-
-const API_URL = process.env.NODE_ENV === 'production' 
-  ? '/api/auth' 
-  : 'http://localhost:5000/api/auth';
+// Centralized API client for authentication
+import { api } from './index';
 
 export const register = async (username, email, password) => {
-  const response = await axios.post(`${API_URL}/register`, {
+  const response = await api.post('/auth/register', {
     username,
     email,
     password
   });
-  return response.data;
+  return response;
 };
 
 export const login = async (email, password) => {
-  const response = await axios.post(`${API_URL}/login`, {
+  const response = await api.post('/auth/login', {
     email,
     password
   });
-  return response.data;
+  
+  // Store token if successful
+  if (response.success && response.token) {
+    localStorage.setItem('authToken', response.token);
+  }
+  
+  return response;
 };
 
 export const logout = async () => {
-  const response = await axios.post(`${API_URL}/logout`);
-  return response.data;
+  const response = await api.post('/auth/logout');
+  
+  // Clear token on logout
+  localStorage.removeItem('authToken');
+  
+  return response;
 };
 
 export const getCurrentUser = async () => {
-  const response = await axios.get(`${API_URL}/me`);
-  return response.data;
+  const response = await api.get('/auth/me');
+  return response;
 };
