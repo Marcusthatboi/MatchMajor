@@ -1,8 +1,8 @@
 .footer {
   background: white;
   color: #333;
-  padding: 40px 0 20px;
-  margin-top: 50px;
+  padding: 20px 0 20px;
+  margin-top: 10px;
   text-align: center;
 }
 
@@ -20,7 +20,7 @@
 }
 
 .footer-logo-image {
-  max-width: 220px;
+  max-width: 75px;
   width: 100%;
   height: auto;
 }
@@ -33,8 +33,8 @@
 }
 
 .footer-bottom {
-  padding-top: 30px;
-  margin-top: 30px;
+  padding-top: 10px;
+  margin-top: 10px;
   border-top: 4px solid rgb(250, 200, 0);
   font-size: 0.85rem;
   color: #444;

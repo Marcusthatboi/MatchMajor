@@ -16,7 +16,7 @@ const Footer = () => {
       <div className="footer-bottom">
         <p>
           <img src={rowanLogo} alt="Rowan University logo" className="footer-rowan-logo" />
-          &copy; {new Date().getFullYear()} MatchMajor and Rowan University. All rights reserved.
+          &copy; {new Date().getFullYear()} MatchMajor. All rights reserved.
         </p>
       </div>
     </footer>

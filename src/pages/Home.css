@@ -1,6 +1,7 @@
 .home-page {
   max-width: 1200px;
   margin: 0 auto;
+  /* background: url('./images/background.jpeg') center center / cover no-repeat; */
 }
 
 .hero {
@@ -48,7 +49,7 @@
 
 .social-modules {
   padding: 50px 20px;
-  background-color: #f8f9fa;
+  /* background-color: #f8f9fa; */
 }
 
 .modules-grid {
