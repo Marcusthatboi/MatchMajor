@@ -101,11 +101,34 @@ export function handleAPIError(error, endpoint = 'Unknown') {
   if (error.response) {
     // Server responded with error status
     const { status, data } = error.response;
-    const message = data?.message || data?.error || 'API Error';
+    
+    // Try multiple message extraction patterns
+    let message = 'API Error';
+    if (data?.message) {
+      message = data.message;
+    } else if (data?.error) {
+      message = data.error;
+    } else if (data?.msg) {
+      message = data.msg;
+    } else if (typeof data === 'string') {
+      message = data;
+    }
+    
+    // Log full error details for debugging
+    console.error(`[${status}] API Error at ${endpoint}:`, {
+      message,
+      data,
+      status
+    });
     
     return new APIError(message, status, error, endpoint);
   } else if (error.request) {
     // Request made but no response
+    console.error(`No response from server for ${endpoint}:`, {
+      request: error.request,
+      code: error.code,
+      errno: error.errno
+    });
     return new APIError(
       'No response from server',
       null,
@@ -114,6 +137,7 @@ export function handleAPIError(error, endpoint = 'Unknown') {
     );
   } else if (error.message === 'Network Error') {
     // Network error
+    console.error(`Network error for ${endpoint}:`, error);
     return new APIError(
       'Network connection failed',
       null,
@@ -123,6 +147,7 @@ export function handleAPIError(error, endpoint = 'Unknown') {
   }
   
   // Other errors
+  console.error(`Unknown error for ${endpoint}:`, error);
   return new APIError(
     error.message || 'Unknown Error',
     null,

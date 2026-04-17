@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import { api } from '../api/index';
 import './Profile.css';
 
 const getInitials = (name) => {
@@ -23,15 +23,8 @@ const Profile = ({ user }) => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const API_URL = process.env.NODE_ENV === 'production'
-          ? '/api/orders/myorders'
-          : 'http://localhost:5000/api/orders/myorders';
-          
-        const response = await axios.get(API_URL, {
-          withCredentials: true
-        });
-        
-        setOrders(response.data.data);
+        const response = await api.get('/orders/myorders');
+        setOrders(response.data || []);
         setLoading(false);
       } catch (error) {
         setError('Failed to load orders');

@@ -6,88 +6,64 @@ const mongoose = require('mongoose');
  */
 const connectDB = async () => {
   try {
+    // Check if already connected
+    if (mongoose.connection.readyState === 1) {
+      console.log('? Using existing MongoDB connection');
+      return mongoose.connection;
+    }
+
+    console.log('?? MongoDB: Connecting to', process.env.MONGODB_URI);        
+
     const mongooseOptions = {
-      // Connection pool settings for performance
+      serverSelectionTimeoutMS: 15000,
+      socketTimeoutMS: 20000,
+      connectTimeoutMS: 15000,
+      family: 4,
+      bufferCommands: true,
+      autoCreate: true,
       maxPoolSize: 10,
       minPoolSize: 2,
-      
-      // Timeout settings
-      connectTimeoutMS: 30000,
-      socketTimeoutMS: 30000,
-      serverSelectionTimeoutMS: 30000,
-      
-      // Retry settings
       retryWrites: true,
-      retryReads: true,
-      
-      // New URL parser
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      
-      // Connection monitoring
-      family: 4 // Use IPv4, skip trying IPv6
+      retryReads: true
+      // useNewUrlParser and useUnifiedTopology removed for Mongoose 6+ compatibility
     };
 
-    const conn = await mongoose.connect(process.env.MONGODB_URI, mongooseOptions);
+    console.log('?? MongoDB: Calling mongoose.connect()...');
+    await mongoose.connect(process.env.MONGODB_URI, mongooseOptions);
 
-    // Connection event handlers
-    mongoose.connection.on('connected', () => {
-      console.log(`✅ MongoDB Connected: ${conn.connection.host}:${conn.connection.port}/${conn.connection.name}`);
-    });
+    // Add stabilization delay
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-    mongoose.connection.on('disconnected', () => {
-      console.log('⚠️  MongoDB Disconnected');
-    });
+    console.log('? MongoDB: Connected (readyState=' + mongoose.connection.readyState + ')');
 
-    mongoose.connection.on('error', (error) => {
-      console.error('❌ MongoDB Connection Error:', error.message);
-    });
+    // Verify with ping
+    console.log('?? MongoDB: Testing connection with admin.ping()...');       
+    const pingResult = await mongoose.connection.db.admin().ping();
+    console.log('? MongoDB: Ping successful:', pingResult);
+    console.log('? MongoDB connection is fully operational');
 
-    mongoose.connection.on('reconnectFailed', () => {
-      console.error('❌ MongoDB Reconnection Failed');
-    });
-
-    // Handle application termination
-    process.on('SIGINT', async () => {
-      await mongoose.connection.close();
-      console.log('MongoDB connection closed due to application termination');
-      process.exit(0);
-    });
-
-    return conn;
+    // Final stability check
+    console.log('?? Final readyState check:', mongoose.connection.readyState);
+    // Test an actual query to verify connection works for models
+    console.log('📡 Testing model query capability...');
+    try {
+      const testCollection = mongoose.connection.collection('users');
+      const testResult = await testCollection.findOne({});
+      console.log('✅ Model query test passed (found:', testResult ? 'document' : 'no documents', ')');
+    } catch (queryErr) {
+      console.error('⚠️  Model query test failed:', queryErr.message);
+      // Continue anyway - test might fail if collection is empty
+    }
+    return mongoose.connection;
   } catch (error) {
-    console.error(`❌ Error connecting to MongoDB: ${error.message}`);
-    
-    // Additional error details
-    if (error.name === 'MongoServerError') {
-      console.error('MongoDB Server Error:', error.message);
-    } else if (error.name === 'MongoParseError') {
-      console.error('MongoDB Connection String Error:', error.message);
-    } else if (error.name === 'MongoAuthenticationError') {
-      console.error('MongoDB Authentication Error - Check credentials in .env');
-    }
-    
-    // Exit process only in production
-    if (process.env.NODE_ENV === 'production') {
-      process.exit(1);
-    }
-    
+    console.error('? MongoDB Connection Failed:', error.message);
     throw error;
   }
 };
 
-// Optional: Get connection status
 const getConnectionStatus = () => {
   return mongoose.connection.readyState;
 };
-
-/**
- * Connection states:
- * 0 = disconnected
- * 1 = connected
- * 2 = connecting
- * 3 = disconnecting
- */
 
 module.exports = connectDB;
 module.exports.getConnectionStatus = getConnectionStatus;

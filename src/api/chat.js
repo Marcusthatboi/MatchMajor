@@ -1,11 +1,9 @@
 // src/api/chat.js
-import axios from 'axios';
+import { api } from './index';
 
 const API_URL = process.env.NODE_ENV === 'production' 
-  ? '/api/chat' 
-  : 'http://localhost:5000/api/chat';
-
-axios.defaults.withCredentials = true;
+  ? '/chat' 
+  : '/chat';
 
 /**
  * Get recent chat messages
@@ -13,8 +11,8 @@ axios.defaults.withCredentials = true;
 export const getMessages = async (limit = 10) => {
   try {
     console.log('Fetching messages from:', `${API_URL}/messages?limit=${limit}`);
-    const response = await axios.get(`${API_URL}/messages?limit=${limit}`);
-    return response.data;
+    const response = await api.get(`${API_URL}/messages`, { params: { limit }, skipCache: true });
+    return response;
   } catch (error) {
     console.error('Get messages error:', {
       message: error.message,
@@ -39,8 +37,8 @@ export const getMessages = async (limit = 10) => {
 export const sendMessage = async (text) => {
   try {
     console.log('Sending message:', text);
-    const response = await axios.post(`${API_URL}/messages`, { text });
-    return response.data;
+    const response = await api.post(`${API_URL}/messages`, { text });
+    return response;
   } catch (error) {
     console.error('Send message error:', {
       message: error.message,

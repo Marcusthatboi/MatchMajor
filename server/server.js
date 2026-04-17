@@ -1,5 +1,6 @@
 // server/server.js
 const express = require('express');
+const http = require('http');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
@@ -20,21 +21,8 @@ const AppError = require('./utils/AppError');
 const { securityMiddleware } = require('./middleware/securityMiddleware');
 const { authLimiter, apiLimiter, searchLimiter, messageLimiter } = require('./config/rateLimiting');
 
-// Import routes
-const authRoutes = require('../routes/authRoutes');
-const productRoutes = require('../routes/productRoutes');
-const cartRoutes = require('../routes/cartRoutes');
-const orderRoutes = require('../routes/orderRoutes');
-const matchRoutes = require('../routes/matchRoutes');
-const surveyRoutes = require('../routes/surveyRoutes');
-const chatroomRoutes = require('../routes/chatroomRoutes');
-const messageRoutes = require('../routes/messageRoutes');
-const postRoutes = require('../routes/postRoutes');
-const healthRoutes = require('./routes/health');
-
 // Connect to database
 const connectDB = require('../config/db');
-connectDB();
 
 const app = express();
 
@@ -97,50 +85,27 @@ if (process.env.ENABLE_RATE_LIMIT !== 'false') {
   app.use(securityMiddleware);
 }
 
-// Routes
-app.use('/api/health', healthRoutes);
-app.use('/api/auth', authLimiter, authRoutes);
-app.use('/api/products', apiLimiter, productRoutes);
-app.use('/api/cart', apiLimiter, cartRoutes);
-app.use('/api/orders', apiLimiter, orderRoutes);
-app.use('/api/matches', searchLimiter, matchRoutes);
-app.use('/api/survey', apiLimiter, surveyRoutes);
-app.use('/api/chatrooms', apiLimiter, chatroomRoutes);
-app.use('/api/messages', messageLimiter, messageRoutes);
-app.use('/api/posts', searchLimiter, postRoutes);
+// === SETUP ROUTES FUNCTION (called after DB connection) ===
+function setupRoutes() {
+  // Import routes AFTER connection is established
+  const authRoutes = require('../routes/authRoutes');
+  const healthRoutes = require('./routes/health');
 
-// 404 handler - must be before error handler
-app.use('*', (req, res, next) => {
-  next(new AppError(`Route ${req.method} ${req.originalUrl} not found`, 404, 'ROUTE_NOT_FOUND'));
-});
+  // Routes
+  app.use('/api/health', healthRoutes);
+  app.use('/api/auth', authLimiter, authRoutes);
 
-// Global error handling middleware - must be LAST
-app.use(errorHandler);
+  // 404 handler - must be before error handler
+  app.use('*', (req, res, next) => {
+    next(new AppError(`Route ${req.method} ${req.originalUrl} not found`, 404, 'ROUTE_NOT_FOUND'));
+  });
+
+  // Global error handling middleware - must be LAST
+  app.use(errorHandler);
+}
 
 const PORT = process.env.PORT || 5000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
-
-// === GRACEFUL SHUTDOWN ===
-const gracefulShutdown = () => {
-  console.log('⏹️  Shutting down gracefully...');
-  
-  server.close(() => {
-    console.log('✅ Server closed');
-    mongoose.connection.close(false, () => {
-      console.log('✅ MongoDB connection closed');
-      process.exit(0);
-    });
-  });
-
-  // Force shutdown after 10 seconds
-  setTimeout(() => {
-    console.error('❌ Forced shutdown');
-    process.exit(1);
-  }, 10000);
-};
-
-process.on('SIGTERM', gracefulShutdown);
-process.on('SIGINT', gracefulShutdown);
 
 // === UNHANDLED PROMISE REJECTION ===
 process.on('unhandledRejection', (err) => {
@@ -154,8 +119,53 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
-const server = app.listen(PORT, () => {
-  console.log(`
+// === START SERVER ===
+(async () => {
+  try {
+    console.log('🚀 Server startup: Connecting to MongoDB...');
+    
+    // Connect to MongoDB BEFORE starting server
+    await connectDB();
+    console.log('✅ MongoDB connection established');
+    
+    // Give connection time to fully stabilize
+    console.log('📡 Waiting for connection stabilization...');
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    
+    // Setup routes now that connection is ready
+    console.log('📡 Setting up routes...');
+    setupRoutes();
+    console.log('✅ Routes configured');
+    
+    const server = http.createServer(app);
+
+    // Increase header size limit to 32KB (default is 16KB)
+    server.maxHeaderSize = 32 * 1024;
+
+    // === GRACEFUL SHUTDOWN ===
+    const gracefulShutdown = () => {
+      console.log('⏹️  Shutting down gracefully...');
+
+      server.close(() => {
+        console.log('✅ Server closed');
+        mongoose.connection.close(false, () => {
+          console.log('✅ MongoDB connection closed');
+          process.exit(0);
+        });
+      });
+
+      // Force shutdown after 10 seconds
+      setTimeout(() => {
+        console.error('❌ Forced shutdown');
+        process.exit(1);
+      }, 10000);
+    };
+
+    process.on('SIGTERM', gracefulShutdown);
+    process.on('SIGINT', gracefulShutdown);
+
+    server.listen(PORT, () => {
+      console.log(`
 ╔════════════════════════════════════════════════╗
 ║          🚀 MatchMajor Server Started         ║
 ╠════════════════════════════════════════════════╣
@@ -164,6 +174,11 @@ const server = app.listen(PORT, () => {
 ║  Security: Enabled ✓                         ║
 ╚════════════════════════════════════════════════╝
   `);
-});
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error.message);
+    process.exit(1);
+  }
+})();
 
 module.exports = app;

@@ -38,16 +38,23 @@ const Register = () => {
     setIsLoading(true);
     
     try {
-      const response = await apiRegister(form.username, form.email, form.password);
-      if (response.success && response.user) {
-        register(response.user);
+      const response = await apiRegister(
+        form.username,
+        form.email,
+        form.password,
+        form.confirmPassword
+      );
+      if (response.success && response.data && response.data.user) {
+        register(response.data.user);
         navigate('/survey');
       } else {
         setError(response.message || 'Registration failed');
       }
     } catch (err) {
       console.error('Register error:', err);
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      // Handle APIError objects from centralized API client
+      const errorMessage = err.message || err.response?.data?.message || 'Registration failed. Please try again.';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

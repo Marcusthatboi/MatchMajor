@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCart } from '../api/cart';
-import axios from 'axios';
+import { api } from '../api/index';
 import './Checkout.css';
 
 const Checkout = () => {
@@ -57,11 +57,7 @@ const Checkout = () => {
     setSubmitting(true);
     
     try {
-      const API_URL = process.env.NODE_ENV === 'production'
-        ? '/api/orders'
-        : 'http://localhost:5000/api/orders';
-        
-      const response = await axios.post(API_URL, {
+      const response = await api.post('/orders', {
         shippingAddress: {
           street: formData.street,
           city: formData.city,
@@ -70,11 +66,9 @@ const Checkout = () => {
           country: formData.country
         },
         paymentMethod: formData.paymentMethod
-      }, {
-        withCredentials: true
       });
       
-      navigate(`/order-success/${response.data.data._id}`);
+      navigate(`/order-success/${response.data._id}`);
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to place order');
       setSubmitting(false);

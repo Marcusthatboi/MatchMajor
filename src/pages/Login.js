@@ -19,15 +19,17 @@ const Login = () => {
     
     try {
       const response = await apiLogin(email, password);
-      if (response.success && response.user) {
-        login(response.user);
+      if (response.success && response.data && response.data.user) {
+        login(response.data.user);
         navigate('/survey');
       } else {
         setError(response.message || 'Login failed');
       }
     } catch (err) {
       console.error('Login error:', err);
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      // Handle APIError objects from centralized API client
+      const errorMessage = err.message || err.response?.data?.message || 'Login failed. Please try again.';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

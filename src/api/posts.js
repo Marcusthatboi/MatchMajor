@@ -1,11 +1,9 @@
 // src/api/posts.js
-import axios from 'axios';
+import { api } from './index';
 
 const API_URL = process.env.NODE_ENV === 'production' 
-  ? '/api/posts' 
-  : 'http://localhost:5000/api/posts';
-
-axios.defaults.withCredentials = true;
+  ? '/posts' 
+  : '/posts';
 
 /**
  * Get all community posts
@@ -13,8 +11,8 @@ axios.defaults.withCredentials = true;
 export const getPosts = async (limit = 10) => {
   try {
     console.log('Fetching posts from:', `${API_URL}?limit=${limit}`);
-    const response = await axios.get(`${API_URL}?limit=${limit}`);
-    return response.data;
+    const response = await api.get(API_URL, { params: { limit }, skipCache: true });
+    return response;
   } catch (error) {
     console.error('Get posts error:', {
       message: error.message,
@@ -39,8 +37,8 @@ export const getPosts = async (limit = 10) => {
 export const createPost = async (content) => {
   try {
     console.log('Creating post:', content);
-    const response = await axios.post(`${API_URL}`, { content });
-    return response.data;
+    const response = await api.post(API_URL, { content });
+    return response;
   } catch (error) {
     console.error('Create post error:', {
       message: error.message,
@@ -57,8 +55,8 @@ export const createPost = async (content) => {
 export const likePost = async (postId) => {
   try {
     console.log('Liking post:', postId);
-    const response = await axios.post(`${API_URL}/${postId}/like`);
-    return response.data;
+    const response = await api.post(`${API_URL}/${postId}/like`);
+    return response;
   } catch (error) {
     console.error('Like post error:', {
       message: error.message,

@@ -1,20 +1,19 @@
 // client/src/api/chatrooms.js
-import axios from 'axios';
+import { api } from './index';
 
-// Configure axios to send cookies with requests
-axios.defaults.withCredentials = true;
+// Uses centralized API client with credentials handling
 
 const API_URL = process.env.NODE_ENV === 'production' 
-  ? '/api/chatrooms' 
-  : 'http://localhost:5000/api/chatrooms';
+  ? '/chatrooms' 
+  : '/chatrooms';
 
 /**
  * Get all chatrooms
  */
 export const getAllChatrooms = async () => {
   try {
-    const response = await axios.get(API_URL);
-    return response.data;
+    const response = await api.get(API_URL, { skipCache: true });
+    return response;
   } catch (error) {
     console.error('Get chatrooms error:', error);
     throw error;
@@ -26,8 +25,8 @@ export const getAllChatrooms = async () => {
  */
 export const getChatroom = async (chatroomId) => {
   try {
-    const response = await axios.get(`${API_URL}/${chatroomId}`);
-    return response.data;
+    const response = await api.get(`${API_URL}/${chatroomId}`);
+    return response;
   } catch (error) {
     console.error('Get chatroom error:', error);
     throw error;
@@ -39,12 +38,12 @@ export const getChatroom = async (chatroomId) => {
  */
 export const createChatroom = async (name, description, color) => {
   try {
-    const response = await axios.post(API_URL, {
+    const response = await api.post(API_URL, {
       name,
       description,
       color
     });
-    return response.data;
+    return response;
   } catch (error) {
     console.error('Create chatroom error:', error);
     throw error;
@@ -56,10 +55,10 @@ export const createChatroom = async (name, description, color) => {
  */
 export const joinChatroom = async (chatroomId) => {
   try {
-    const response = await axios.post(`${API_URL}/join`, {
+    const response = await api.post(`${API_URL}/join`, {
       chatroomId
     });
-    return response.data;
+    return response;
   } catch (error) {
     console.error('Join chatroom error:', error);
     throw error;
@@ -71,10 +70,10 @@ export const joinChatroom = async (chatroomId) => {
  */
 export const leaveChatroom = async (chatroomId) => {
   try {
-    const response = await axios.post(`${API_URL}/leave`, {
+    const response = await api.post(`${API_URL}/leave`, {
       chatroomId
     });
-    return response.data;
+    return response;
   } catch (error) {
     console.error('Leave chatroom error:', error);
     throw error;

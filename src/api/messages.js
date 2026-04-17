@@ -1,20 +1,19 @@
 // client/src/api/messages.js
-import axios from 'axios';
+import { api } from './index';
 
-// Configure axios to send cookies with requests
-axios.defaults.withCredentials = true;
+// Uses centralized API client with credentials handling
 
 const API_URL = process.env.NODE_ENV === 'production' 
-  ? '/api/messages' 
-  : 'http://localhost:5000/api/messages';
+  ? '/messages' 
+  : '/messages';
 
 /**
  * Get messages for a chatroom
  */
 export const getMessages = async (chatroomId, limit = 50) => {
   try {
-    const response = await axios.get(`${API_URL}/${chatroomId}?limit=${limit}`);
-    return response.data;
+    const response = await api.get(`${API_URL}/${chatroomId}`, { params: { limit }, skipCache: true });
+    return response;
   } catch (error) {
     console.error('Get messages error:', error);
     throw error;
@@ -26,11 +25,11 @@ export const getMessages = async (chatroomId, limit = 50) => {
  */
 export const sendMessage = async (chatroomId, text) => {
   try {
-    const response = await axios.post(API_URL, {
+    const response = await api.post(API_URL, {
       chatroomId,
       text
     });
-    return response.data;
+    return response;
   } catch (error) {
     console.error('Send message error:', error);
     throw error;
@@ -42,8 +41,8 @@ export const sendMessage = async (chatroomId, text) => {
  */
 export const deleteMessage = async (messageId) => {
   try {
-    const response = await axios.delete(`${API_URL}/${messageId}`);
-    return response.data;
+    const response = await api.delete(`${API_URL}/${messageId}`);
+    return response;
   } catch (error) {
     console.error('Delete message error:', error);
     throw error;

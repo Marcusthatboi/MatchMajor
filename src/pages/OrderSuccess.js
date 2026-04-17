@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import axios from 'axios';
+import { api } from '../api/index';
 import './OrderSuccess.css';
 
 const OrderSuccess = () => {
@@ -12,15 +12,8 @@ const OrderSuccess = () => {
   useEffect(() => {
     const fetchOrder = async () => {
       try {
-        const API_URL = process.env.NODE_ENV === 'production'
-          ? '/api/orders'
-          : 'http://localhost:5000/api/orders';
-          
-        const response = await axios.get(`${API_URL}/${id}`, {
-          withCredentials: true
-        });
-        
-        setOrder(response.data.data);
+        const response = await api.get(`/orders/${id}`);
+        setOrder(response.data || response);
         setLoading(false);
       } catch (error) {
         setError('Failed to load order details');
