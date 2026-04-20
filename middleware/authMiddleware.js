@@ -1,7 +1,7 @@
 // server/middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const AppError = require('../utils/AppError');
+const AppError = require('../server/utils/AppError');
 
 /**
  * Middleware to protect routes - requires valid JWT token

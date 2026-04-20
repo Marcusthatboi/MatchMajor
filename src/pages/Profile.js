@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api/index';
+import { useUser } from '../context/UserContext';
 import './Profile.css';
 
 const getInitials = (name) => {
@@ -13,7 +14,9 @@ const getInitials = (name) => {
     .toUpperCase();
 };
 
-const Profile = ({ user }) => {
+const Profile = ({ user: userProp }) => {
+  const { user: contextUser } = useUser();
+  const user = userProp || contextUser;
   const avatarUrl = user?.profilePhoto || user?.avatar || user?.image || null;
   const initials = getInitials(user?.username);
   const [orders, setOrders] = useState([]);
@@ -22,23 +25,43 @@ const Profile = ({ user }) => {
   
   useEffect(() => {
     const fetchOrders = async () => {
-      try {
-        const response = await api.get('/orders/myorders');
-        setOrders(response.data || []);
+      if (!user) {
         setLoading(false);
+        setError('Unable to load profile');
+        return;
+      }
+
+      try {
+        let response;
+
+        try {
+          response = await api.get('/users');
+        } catch (legacyError) {
+          response = await api.get('/users');
+        }
+
+        setOrders(response.data || response.orders || []);
+        setError(null);
       } catch (error) {
-        setError('Failed to load orders');
+        // Keep the profile usable even if order history fails.
+        setOrders([]);
+        setError(null);
+      } finally {
         setLoading(false);
       }
     };
     
     fetchOrders();
-  }, []);
+  }, [user]);
   
   if (loading) {
     return <div className="loading">Loading profile data...</div>;
   }
   
+  if (!user) {
+    return <div className="error">Unable to load profile</div>;
+  }
+
   if (error) {
     return <div className="error">{error}</div>;
   }
@@ -203,7 +226,9 @@ const Profile = ({ user }) => {
           <div className="profile-info">
             <h2>Additional Information</h2>
               <div className="info-group">
-                <p className="prompt">Empty Container</p>
+                <p className="prompt">
+                  {orders.length > 0 ? `Order history loaded (${orders.length})` : 'No recent orders found'}
+                </p>
               </div>
           </div>
         </div>

@@ -55,7 +55,7 @@ const Navbar = ({ logoutHandler }) => {
                 <span className="username">Hi, {user.username}</span>
                 <div className="dropdown-content">
                   <Link to="/profile" className="dropdown-item">Profile</Link>
-                  <Link to="/cart" className="dropdown-item">Cart & Orders</Link>
+                  <Link to="/posts" className="dropdown-item">Community Posts</Link>
                   <button onClick={handleLogout} className="dropdown-item logout-btn">
                     Logout
                   </button>

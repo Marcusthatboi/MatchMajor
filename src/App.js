@@ -4,14 +4,10 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Survey from './pages/Survey';
-
-import Cart from './pages/Cart';
 import Profile from './pages/Profile';
 import Matches from './pages/Matches';
 import Posts from './pages/Posts';
 import ChatRoom from './pages/ChatRoom';
-import Checkout from './pages/Checkout';
-import OrderSuccess from './pages/OrderSuccess';
 import Navbar from './components/UI/Navbar';
 import Footer from './components/UI/Footer';
 import { UserProvider, useUser } from './context/UserContext';
@@ -55,7 +51,7 @@ const AppContent = () => {
             } />
             <Route path="/profile" element={
               <ProtectedRoute>
-                <Profile />
+                <Profile user={user} />
               </ProtectedRoute>
             } />
             <Route path="/matches" element={
@@ -73,24 +69,6 @@ const AppContent = () => {
                 <ChatRoom />
               </ProtectedRoute>
             } />
-            
-            {/* Cart and checkout routes */}
-            <Route path="/cart" element={
-              <ProtectedRoute>
-                <Cart />
-              </ProtectedRoute>
-            } />
-            <Route path="/checkout" element={
-              <ProtectedRoute>
-                <Checkout />
-              </ProtectedRoute>
-            } />
-            <Route path="/order/:id" element={
-              <ProtectedRoute>
-                <OrderSuccess />
-              </ProtectedRoute>
-            } />
-            
             {/* Catch-all */}
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>

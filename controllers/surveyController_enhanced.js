@@ -5,9 +5,9 @@
 
 const Survey = require('../models/Survey');
 const User = require('../models/User');
-const AppError = require('../utils/AppError');
-const asyncHandler = require('../utils/asyncHandler');
-const ERROR_CODES = require('../utils/errorCodes');
+const AppError = require('../server/utils/AppError');
+const asyncHandler = require('../server/utils/asyncHandler');
+const ERROR_CODES = require('../server/utils/errorCodes');
 const {
   validateMongoId,
   validateRequiredFields,

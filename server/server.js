@@ -91,9 +91,6 @@ function setupRoutes() {
   const authRoutes = require('../routes/authRoutes');
   const surveyRoutes = require('../routes/surveyRoutes');
   const matchRoutes = require('../routes/matchRoutes');
-  const productRoutes = require('../routes/productRoutes');
-  const cartRoutes = require('../routes/cartRoutes');
-  const orderRoutes = require('../routes/orderRoutes');
   const postRoutes = require('../routes/postRoutes');
   const messageRoutes = require('../routes/messageRoutes');
   const chatroomRoutes = require('../routes/chatroomRoutes');
@@ -104,9 +101,6 @@ function setupRoutes() {
   app.use('/api/auth', authLimiter, authRoutes);
   app.use('/api/survey', surveyRoutes);
   app.use('/api/matches', matchRoutes);
-  app.use('/api/products', productRoutes);
-  app.use('/api/cart', cartRoutes);
-  app.use('/api/orders', orderRoutes);
   app.use('/api/posts', postRoutes);
   app.use('/api/messages', messageRoutes);
   app.use('/api/chatroom', chatroomRoutes);

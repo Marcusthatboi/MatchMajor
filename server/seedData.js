@@ -1,8 +1,8 @@
 // server/seedData.js
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const Product = require('./models/Product');
-const products = require('./data/productData');
+const Product = require('../models/Product');
+const products = require('../data/productData');
 
 // Load environment variables
 dotenv.config();
