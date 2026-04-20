@@ -10,8 +10,6 @@ import Profile from './pages/Profile';
 import Matches from './pages/Matches';
 import Posts from './pages/Posts';
 import ChatRoom from './pages/ChatRoom';
-import ProductDetail from './pages/ProductDetail';
-import Products from './pages/Products';
 import Checkout from './pages/Checkout';
 import OrderSuccess from './pages/OrderSuccess';
 import Navbar from './components/UI/Navbar';
@@ -75,10 +73,6 @@ const AppContent = () => {
                 <ChatRoom />
               </ProtectedRoute>
             } />
-            
-            {/* Product routes */}
-            <Route path="/products" element={<Products />} />
-            <Route path="/products/:id" element={<ProductDetail />} />
             
             {/* Cart and checkout routes */}
             <Route path="/cart" element={

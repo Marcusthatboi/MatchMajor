@@ -21,12 +21,14 @@ const {
 /**
  * Generate JWT token with security measures
  * @param {string} id - User ID
+ * @param {string} email - User email
  * @returns {string} JWT token
  */
-const generateToken = (id) => {
+const generateToken = (id, email) => {
   return jwt.sign(
     {
       id,
+      email,
       iat: Math.floor(Date.now() / 1000)
     },
     process.env.JWT_SECRET,
@@ -111,7 +113,7 @@ exports.register = asyncHandler(async (req, res) => {
   console.log('[REGISTER] User created successfully:', { _id: user._id, username: user.username, email: user.email });
 
   // === GENERATE TOKEN ===
-  const token = generateToken(user._id);
+  const token = generateToken(user._id, user.email);
   setTokenCookie(res, token);
 
   // === RETURN RESPONSE ===
@@ -169,7 +171,7 @@ exports.login = asyncHandler(async (req, res) => {
   await user.save();
 
   // === GENERATE TOKEN ===
-  const token = generateToken(user._id);
+  const token = generateToken(user._id, user.email);
   setTokenCookie(res, token);
 
   // === RETURN RESPONSE ===

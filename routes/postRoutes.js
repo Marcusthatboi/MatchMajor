@@ -8,7 +8,7 @@ const {
   addComment,
   deletePost
 } = require('../controllers/postController');
-const { protect } = require('../middleware/authMiddleware');
+const { protect } = require('../server/middleware/authMiddleware_enhanced');
 
 router.use(protect); // All routes require authentication
 

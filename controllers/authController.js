@@ -3,10 +3,11 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 // Generate JWT token with enhanced security
-const generateToken = (id) => {
+const generateToken = (id, email) => {
   return jwt.sign(
     { 
       id,
+      email,
       iat: Math.floor(Date.now() / 1000) // Issued at time
     }, 
     process.env.JWT_SECRET, 
@@ -56,7 +57,7 @@ exports.register = async (req, res) => {
     
     if (user) {
       // Create token
-      const token = generateToken(user._id);
+      const token = generateToken(user._id, user.email);
       
       // Set secure cookie with enhanced options
       res.cookie('token', token, {
@@ -83,10 +84,37 @@ exports.register = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error(error);
+    console.error('Registration error:', error);
+    
+    // Handle Mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors)
+        .map(err => err.message)
+        .join('; ');
+      return res.status(400).json({
+        success: false,
+        message: `Validation error: ${messages}`,
+        errorCode: 'VALIDATION_ERROR',
+        details: error.errors
+      });
+    }
+    
+    // Handle duplicate key errors
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern)[0];
+      return res.status(409).json({
+        success: false,
+        message: `A user with this ${field} already exists`,
+        errorCode: 'DUPLICATE_KEY',
+        field
+      });
+    }
+    
+    // Generic error response
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error during registration',
+      errorCode: 'SERVER_ERROR'
     });
   }
 };
@@ -104,8 +132,8 @@ exports.login = async (req, res) => {
       });
     }
     
-    // Find user by email or username
-    const user = await User.findOne({ $or: [{ email }, { username: email }] });
+    // Find user by email or username - MUST select password for comparison
+    const user = await User.findOne({ $or: [{ email }, { username: email }] }).select('+password');
     
     if (!user) {
       return res.status(401).json({
@@ -125,7 +153,7 @@ exports.login = async (req, res) => {
     }
     
     // Create token
-    const token = generateToken(user._id);
+    const token = generateToken(user._id, user.email);
     
     // Set secure cookie with enhanced options
     res.cookie('token', token, {
@@ -146,10 +174,12 @@ exports.login = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error(error);
+    console.error('Login error:', error.message, error.stack);
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error during login',
+      errorCode: 'LOGIN_ERROR',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };

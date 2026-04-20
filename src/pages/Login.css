@@ -48,6 +48,76 @@
   background-color: var(--cyan-dark);
 }
 
+.login-page button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Error container with better styling */
+.error-container {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #ffe6e6;
+  border-left: 4px solid #d32f2f;
+  border-radius: 4px;
+}
+
+.login-page .error {
+  color: #d32f2f;
+  margin: 0 0 10px 0;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* Debug info - helpful context for troubleshooting */
+.debug-info {
+  color: #c62828;
+  margin: 8px 0;
+  font-size: 0.85rem;
+  font-style: italic;
+  opacity: 0.9;
+  line-height: 1.3;
+}
+
+/* Suggestions for common issues */
+.suggestion {
+  color: #e8630a;
+  margin-top: 12px;
+  font-size: 0.9rem;
+  padding: 10px;
+  background-color: #fff3e0;
+  border-radius: 3px;
+  line-height: 1.4;
+}
+
+.suggestion code {
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: 3px 6px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  color: #333;
+}
+
+/* Loading info - shows progress */
+.loading-info {
+  color: var(--primary-cyan);
+  margin-top: 15px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
 .bypass-btn {
   background-color: var(--primary-cyan) !important;
   color: white !important;

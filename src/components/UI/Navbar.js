@@ -41,16 +41,15 @@ const Navbar = ({ logoutHandler }) => {
             <Link to="/matches" className="nav-link">Matches</Link>
             <Link to="/posts" className="nav-link">Posts</Link>
             <Link to="/chat" className="nav-link">Chatroom</Link>
-            <Link to="/products" className="nav-link">Products</Link>
           </div>
         )}
         
         <div className="navbar-auth">
           {user ? (
             <>
-              <Link to="/cart" className="cart-link">
-                <i className="fas fa-shopping-cart"></i>
-                Cart
+              <Link to="/profile" className="profile-link">
+                <i className="fas fa-user-circle"></i>
+                Profile
               </Link>
               <div className="user-menu">
                 <span className="username">Hi, {user.username}</span>

@@ -1,5 +1,5 @@
 # Frontend Build Stage
-FROM node:18-alpine AS frontend-build
+FROM node:20-alpine AS frontend-build
 
 WORKDIR /app
 
@@ -17,7 +17,7 @@ COPY src ./src
 RUN npm run build
 
 # Backend Stage with Frontend
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 

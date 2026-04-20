@@ -185,7 +185,7 @@ const surveySchema = new mongoose.Schema({
 /**
  * Indexes for performance optimization
  */
-surveySchema.index({ userId: 1 });
+// userId index is created automatically via unique: true constraint
 surveySchema.index({ major: 1 });
 surveySchema.index({ year: 1 });
 surveySchema.index({ interests: 1 });

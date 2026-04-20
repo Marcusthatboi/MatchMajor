@@ -6,9 +6,9 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const Cart = require('../models/Cart');
-const AppError = require('../utils/AppError');
-const asyncHandler = require('../utils/asyncHandler');
-const ERROR_CODES = require('../utils/errorCodes');
+const AppError = require('../server/utils/AppError');
+const asyncHandler = require('../server/utils/asyncHandler');
+const ERROR_CODES = require('../server/utils/errorCodes');
 const {
   validateMongoId,
   validateRequiredFields,
@@ -18,7 +18,7 @@ const {
   validateEnum,
   sanitizeText,
   sanitizeEmail
-} = require('../utils/inputValidation');
+} = require('../server/utils/inputValidation');
 
 /**
  * Create order from cart with comprehensive validation

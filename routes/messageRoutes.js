@@ -6,7 +6,7 @@ const {
   sendMessage,
   deleteMessage
 } = require('../controllers/messageController');
-const { protect } = require('../middleware/authMiddleware');
+const { protect } = require('../server/middleware/authMiddleware_enhanced');
 
 router.use(protect); // All routes require authentication
 

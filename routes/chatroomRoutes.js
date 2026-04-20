@@ -8,7 +8,7 @@ const {
   leaveChatroom,
   getChatroom
 } = require('../controllers/chatroomController');
-const { protect } = require('../middleware/authMiddleware');
+const { protect } = require('../server/middleware/authMiddleware_enhanced');
 
 router.use(protect); // All routes require authentication
 

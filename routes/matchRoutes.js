@@ -6,7 +6,7 @@ const {
   getUserProfile,
   updateProfile 
 } = require('../controllers/matchController');
-const { protect } = require('../middleware/authMiddleware');
+const { protect } = require('../server/middleware/authMiddleware_enhanced');
 
 // All routes require authentication
 router.use(protect);

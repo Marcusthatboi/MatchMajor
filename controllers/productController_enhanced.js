@@ -4,9 +4,9 @@
  */
 
 const Product = require('../models/Product');
-const AppError = require('../utils/AppError');
-const asyncHandler = require('../utils/asyncHandler');
-const ERROR_CODES = require('../utils/errorCodes');
+const AppError = require('../server/utils/AppError');
+const asyncHandler = require('../server/utils/asyncHandler');
+const ERROR_CODES = require('../server/utils/errorCodes');
 const {
   validateMongoId,
   validateRequiredFields,
@@ -14,7 +14,7 @@ const {
   validatePrice,
   validateEnum,
   sanitizeText
-} = require('../utils/inputValidation');
+} = require('../server/utils/inputValidation');
 
 /**
  * Get all products with filtering, sorting, and pagination

@@ -87,13 +87,29 @@ if (process.env.ENABLE_RATE_LIMIT !== 'false') {
 
 // === SETUP ROUTES FUNCTION (called after DB connection) ===
 function setupRoutes() {
-  // Import routes AFTER connection is established
+  // Import all route modules
   const authRoutes = require('../routes/authRoutes');
+  const surveyRoutes = require('../routes/surveyRoutes');
+  const matchRoutes = require('../routes/matchRoutes');
+  const productRoutes = require('../routes/productRoutes');
+  const cartRoutes = require('../routes/cartRoutes');
+  const orderRoutes = require('../routes/orderRoutes');
+  const postRoutes = require('../routes/postRoutes');
+  const messageRoutes = require('../routes/messageRoutes');
+  const chatroomRoutes = require('../routes/chatroomRoutes');
   const healthRoutes = require('./routes/health');
-
-  // Routes
+  
+  // Register routes with appropriate middleware
   app.use('/api/health', healthRoutes);
   app.use('/api/auth', authLimiter, authRoutes);
+  app.use('/api/survey', surveyRoutes);
+  app.use('/api/matches', matchRoutes);
+  app.use('/api/products', productRoutes);
+  app.use('/api/cart', cartRoutes);
+  app.use('/api/orders', orderRoutes);
+  app.use('/api/posts', postRoutes);
+  app.use('/api/messages', messageRoutes);
+  app.use('/api/chatroom', chatroomRoutes);
 
   // 404 handler - must be before error handler
   app.use('*', (req, res, next) => {

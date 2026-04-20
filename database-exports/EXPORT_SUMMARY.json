@@ -1,8 +1,8 @@
 {
-  "exportDate": "2026-04-09T23:01:25.510Z",
+  "exportDate": "2026-04-20T03:30:36.114Z",
   "database": "mongodb://localhost:27017/matchmajor",
   "collections": {
-    "users": 1,
+    "users": 3,
     "products": 0,
     "orders": 0,
     "carts": 0
@@ -13,5 +13,5 @@
     "orders": "orders.json",
     "carts": "carts.json"
   },
-  "total": 1
+  "total": 3
 }

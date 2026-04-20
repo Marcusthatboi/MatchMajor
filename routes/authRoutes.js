@@ -6,7 +6,7 @@ const {
   login, 
   logout, 
   getCurrentUser 
-} = require('../server/controllers/authController_enhanced');
+} = require('../controllers/authController');
 const { protect, logAuthEvents } = require('../server/middleware/authMiddleware_enhanced');
 const { validateCSRFToken } = require('../server/middleware/authMiddleware_enhanced');
 

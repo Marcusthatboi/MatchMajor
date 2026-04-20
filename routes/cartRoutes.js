@@ -8,7 +8,7 @@ const {
   removeFromCart,
   clearCart 
 } = require('../controllers/cartController_enhanced');
-const { protect, validateCSRFToken } = require('../middleware/authMiddleware_enhanced');
+const { protect, validateCSRFToken } = require('../server/middleware/authMiddleware_enhanced');
 
 // === ALL CART ROUTES REQUIRE AUTHENTICATION ===
 router.use(protect);

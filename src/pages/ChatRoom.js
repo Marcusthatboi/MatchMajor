@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ChatroomCategories from './ChatroomCategories';
 import { sendMessage as apiSendMessage, getMessages } from '../api/messages';
-import { createPost as apiCreatePost, getPosts, likePost as apiLikePost } from '../api/chatroomPosts';
+import { createPost as apiCreatePost, getPosts, likePost as apiLikePost, addComment as apiAddComment } from '../api/chatroomPosts';
 import './ChatRoom.css';
 
 const ChatRoom = ({ user }) => {
@@ -13,6 +13,8 @@ const ChatRoom = ({ user }) => {
   const [loading, setLoading] = useState(false);
   const [showPostModal, setShowPostModal] = useState(false);
   const [newContent, setNewContent] = useState('');
+  const [expandedPost, setExpandedPost] = useState(null);
+  const [commentText, setCommentText] = useState({});
   const messagesEndRef = useRef(null);
 
   // Load messages and posts when chatroom is selected
@@ -91,6 +93,31 @@ const ChatRoom = ({ user }) => {
       }
     } catch (error) {
       console.error('Failed to like post:', error);
+    }
+  };
+
+  const handleAddComment = async (postId) => {
+    const text = commentText[postId]?.trim();
+    if (!text || !user) return;
+
+    try {
+      const response = await apiAddComment(postId, text);
+      if (response.success) {
+        setPosts((prev) =>
+          prev.map((post) =>
+            post._id === postId
+              ? {
+                  ...post,
+                  comments: response.data.comments || [],
+                  commentCount: (response.data.comments || []).length
+                }
+              : post
+          )
+        );
+        setCommentText((prev) => ({ ...prev, [postId]: '' }));
+      }
+    } catch (error) {
+      console.error('Failed to add comment:', error);
     }
   };
 
@@ -191,9 +218,65 @@ const ChatRoom = ({ user }) => {
                       <p className="post-content">{post.content}</p>
                       <div className="post-footer">
                         <button onClick={() => handleLike(post._id)} className="like-btn">
-                          ❤️ {post.likeCount}
+                          ❤️ {post.likeCount || 0}
+                        </button>
+                        <button
+                          onClick={() => setExpandedPost(expandedPost === post._id ? null : post._id)}
+                          className="reply-btn"
+                        >
+                          💬 {post.comments?.length || 0} Replies
                         </button>
                       </div>
+
+                      {/* Comments Section */}
+                      {expandedPost === post._id && (
+                        <div className="comments-section">
+                          <div className="comments-list">
+                            {post.comments && post.comments.length > 0 ? (
+                              post.comments.map((comment, idx) => (
+                                <div key={idx} className="comment-item">
+                                  <div className="comment-header">
+                                    <strong className="comment-author">
+                                      {comment.authorName || comment.author?.username || 'Anonymous'}
+                                    </strong>
+                                    <span className="comment-time">{formatTime(comment.createdAt)}</span>
+                                  </div>
+                                  <p className="comment-text">{comment.text}</p>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="no-comments">No replies yet. Be the first to reply!</p>
+                            )}
+                          </div>
+
+                          {/* Comment Input */}
+                          {user && (
+                            <div className="comment-input-area">
+                              <input
+                                type="text"
+                                placeholder="Write a reply..."
+                                className="comment-input"
+                                value={commentText[post._id] || ''}
+                                onChange={(e) =>
+                                  setCommentText((prev) => ({
+                                    ...prev,
+                                    [post._id]: e.target.value
+                                  }))
+                                }
+                                onKeyDown={(e) =>
+                                  e.key === 'Enter' && handleAddComment(post._id)
+                                }
+                              />
+                              <button
+                                className="comment-submit-btn"
+                                onClick={() => handleAddComment(post._id)}
+                              >
+                                Reply
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </article>
                   ))
                 )}

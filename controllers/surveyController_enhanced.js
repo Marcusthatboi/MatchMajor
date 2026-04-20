@@ -15,7 +15,7 @@ const {
   validateEnum,
   sanitizeText,
   validateArrayNotEmpty
-} = require('../utils/inputValidation');
+} = require('../server/utils/inputValidation');
 
 const VALID_MAJORS = ['Computer Science', 'Engineering', 'Business', 'Arts', 'Sciences', 'Medicine', 'Law', 'Other'];
 const VALID_YEARS = [1, 2, 3, 4];

@@ -8,7 +8,7 @@ const {
   updateProduct,
   deleteProduct
 } = require('../controllers/productController_enhanced');
-const { protect, restrictTo, validateCSRFToken } = require('../middleware/authMiddleware_enhanced');
+const { protect, restrictTo, validateCSRFToken } = require('../server/middleware/authMiddleware_enhanced');
 
 // === PUBLIC ROUTES (read-only) ===
 router.get('/', getProducts);

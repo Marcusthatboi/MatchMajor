@@ -68,7 +68,7 @@ const cartSchema = new mongoose.Schema({
 /**
  * Indexes for performance optimization
  */
-cartSchema.index({ user: 1 });
+// user index is created automatically via unique: true constraint
 cartSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 }); // TTL index for auto-deletion
 cartSchema.index({ createdAt: -1 });
 

@@ -8,7 +8,7 @@ const {
   updateOrderStatus,
   cancelOrder
 } = require('../controllers/orderController_enhanced');
-const { protect, restrictTo, validateCSRFToken, checkResourceOwnership } = require('../middleware/authMiddleware_enhanced');
+const { protect, restrictTo, validateCSRFToken, checkResourceOwnership } = require('../server/middleware/authMiddleware_enhanced');
 
 // === ALL ORDER ROUTES REQUIRE AUTHENTICATION ===
 router.use(protect);

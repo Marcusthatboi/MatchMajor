@@ -5,14 +5,14 @@
 
 const Cart = require('../models/Cart');
 const Product = require('../models/Product');
-const AppError = require('../utils/AppError');
-const asyncHandler = require('../utils/asyncHandler');
-const ERROR_CODES = require('../utils/errorCodes');
+const AppError = require('../server/utils/AppError');
+const asyncHandler = require('../server/utils/asyncHandler');
+const ERROR_CODES = require('../server/utils/errorCodes');
 const {
   validateMongoId,
   validateRequiredFields,
   validateQuantity
-} = require('../utils/inputValidation');
+} = require('../server/utils/inputValidation');
 
 /**
  * Get user's cart with proper error handling

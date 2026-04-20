@@ -8,7 +8,7 @@ const {
   deleteSurvey,
   getAllSurveys
 } = require('../controllers/surveyController');
-const { protect } = require('../middleware/authMiddleware');
+const { protect } = require('../server/middleware/authMiddleware_enhanced');
 
 // Protected routes (require authentication)
 router.post('/', protect, createOrUpdateSurvey);

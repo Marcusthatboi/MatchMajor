@@ -73,27 +73,25 @@ const userSchema = new mongoose.Schema({
 /**
  * Indexes for performance optimization
  */
-userSchema.index({ email: 1 });
-userSchema.index({ username: 1 });
+// email and username indexes are created automatically via unique: true constraint
 userSchema.index({ createdAt: -1 });
 userSchema.index({ role: 1 });
 
 /**
  * Pre-save middleware: Hash password before saving
  */
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function() {
   // Only hash if password is modified
   if (!this.isModified('password')) {
-    return next();
+    return;
   }
   
   try {
     // Generate salt and hash password with 12 rounds for stronger security
     const salt = await bcrypt.genSalt(12);
     this.password = await bcrypt.hash(this.password, salt);
-    next();
   } catch (error) {
-    next(error);
+    throw error;
   }
 });
 
@@ -116,13 +114,12 @@ userSchema.methods.toJSON = function() {
 /**
  * Query middleware: Always exclude password field unless explicitly selected
  */
-userSchema.pre(/^find/, function(next) {
+userSchema.pre('find', function() {
   // Skip if password is already selected
   if (this.getOptions().select && this.getOptions().select.includes('password')) {
-    return next();
+    return;
   }
   this.select('-password');
-  next();
 });
 
 const User = mongoose.model('User', userSchema);
