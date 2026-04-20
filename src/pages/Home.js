@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getMatches } from '../api/matches';
-import { getPosts } from '../api/posts';
+import { getPostsByChatroom as getPosts } from '../api/posts';
 import { getMessages } from '../api/chat';
 import './Home.css';
 

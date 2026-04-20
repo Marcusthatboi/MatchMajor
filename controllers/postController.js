@@ -1,6 +1,7 @@
 // server/controllers/postController.js
 const Post = require('../models/Post');
 const Chatroom = require('../models/Chatroom');
+const User = require('../models/User');
 
 // Get posts for a chatroom
 exports.getPosts = async (req, res) => {
@@ -41,7 +42,7 @@ exports.createPost = async (req, res) => {
     }
 
     // Verify chatroom exists
-    const chatroom = await Chatroom.findById(chatroomId);
+    let chatroom = await Chatroom.findById(chatroomId);
     if (!chatroom) {
       return res.status(404).json({
         success: false,
@@ -49,18 +50,26 @@ exports.createPost = async (req, res) => {
       });
     }
 
-    // Verify user is a member
+    // Auto-add user to members if not already a member
     if (!chatroom.members.includes(req.user._id)) {
-      return res.status(403).json({
+      chatroom.members.push(req.user._id);
+      chatroom.memberCount = chatroom.members.length;
+      await chatroom.save();
+    }
+
+    // Get user details for authorName
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(401).json({
         success: false,
-        message: 'You are not a member of this chatroom'
+        message: 'User not found'
       });
     }
 
     const post = await Post.create({
       chatroom: chatroomId,
       author: req.user._id,
-      authorName: req.user.username,
+      authorName: user.username || 'Anonymous',
       content: content.trim(),
       likes: [],
       likeCount: 0,

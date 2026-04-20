@@ -1,68 +1,87 @@
 // src/api/posts.js
 import { api } from './index';
 
-const API_URL = process.env.NODE_ENV === 'production' 
-  ? '/posts' 
-  : '/posts';
+const API_URL = '/api/posts';
 
 /**
- * Get all community posts
+ * Get posts for a specific chatroom
+ * GET /api/posts/:chatroomId?limit=50
  */
-export const getPosts = async (limit = 10) => {
+export const getPostsByChatroom = async (chatroomId, limit = 50) => {
   try {
-    console.log('Fetching posts from:', `${API_URL}?limit=${limit}`);
-    const response = await api.get(API_URL, { params: { limit }, skipCache: true });
+    console.log('Fetching posts for chatroom:', chatroomId);
+    const response = await api.get(`${API_URL}/${chatroomId}`, { 
+      params: { limit },
+      skipCache: true 
+    });
     return response;
   } catch (error) {
-    console.error('Get posts error:', {
-      message: error.message,
-      status: error.response?.status,
-      data: error.response?.data,
-      code: error.code
-    });
-    // Return mock data if API not available
-    return {
-      success: false,
-      data: [
-        { _id: '1', author: 'Alex', content: 'Working on my AI portfolio today! Anyone want to collaborate?', likes: 14, createdAt: new Date() },
-        { _id: '2', author: 'Jordan', content: 'Finished a data analysis project on college admissions trends.', likes: 21, createdAt: new Date() },
-      ]
-    };
-  }
-};
-
-/**
- * Create a new post
- */
-export const createPost = async (content) => {
-  try {
-    console.log('Creating post:', content);
-    const response = await api.post(API_URL, { content });
-    return response;
-  } catch (error) {
-    console.error('Create post error:', {
-      message: error.message,
-      status: error.response?.status,
-      data: error.response?.data
-    });
+    console.error('Get posts error:', error);
     throw error;
   }
 };
 
 /**
- * Like a post
+ * Create a new post in a chatroom
+ * POST /api/posts
+ */
+export const createPost = async (chatroomId, content) => {
+  try {
+    console.log('Creating post in chatroom:', chatroomId);
+    const response = await api.post(API_URL, { 
+      chatroomId,
+      content 
+    }, { skipCache: true });
+    return response;
+  } catch (error) {
+    console.error('Create post error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Like/Unlike a post
+ * PUT /api/posts/:postId/like
  */
 export const likePost = async (postId) => {
   try {
-    console.log('Liking post:', postId);
-    const response = await api.post(`${API_URL}/${postId}/like`);
+    console.log('Toggling like for post:', postId);
+    const response = await api.put(`${API_URL}/${postId}/like`, {}, { skipCache: true });
     return response;
   } catch (error) {
-    console.error('Like post error:', {
-      message: error.message,
-      status: error.response?.status,
-      data: error.response?.data
-    });
+    console.error('Like post error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Add a comment to a post
+ * POST /api/posts/:postId/comment
+ */
+export const addComment = async (postId, text) => {
+  try {
+    console.log('Adding comment to post:', postId);
+    const response = await api.post(`${API_URL}/${postId}/comment`, { 
+      text 
+    }, { skipCache: true });
+    return response;
+  } catch (error) {
+    console.error('Add comment error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete a post (owner or admin only)
+ * DELETE /api/posts/:postId
+ */
+export const deletePost = async (postId) => {
+  try {
+    console.log('Deleting post:', postId);
+    const response = await api.delete(`${API_URL}/${postId}`, { skipCache: true });
+    return response;
+  } catch (error) {
+    console.error('Delete post error:', error);
     throw error;
   }
 };
