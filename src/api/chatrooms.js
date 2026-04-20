@@ -4,8 +4,8 @@ import { api } from './index';
 // Uses centralized API client with credentials handling
 
 const API_URL = process.env.NODE_ENV === 'production' 
-  ? '/chatrooms' 
-  : '/chatrooms';
+  ? '/chatroom' 
+  : '/chatroom';
 
 /**
  * Get all chatrooms
@@ -36,12 +36,13 @@ export const getChatroom = async (chatroomId) => {
 /**
  * Create a new chatroom
  */
-export const createChatroom = async (name, description, color) => {
+export const createChatroom = async (name, description, color, isPrivate = false) => {
   try {
     const response = await api.post(API_URL, {
       name,
       description,
-      color
+      color,
+      isPrivate
     });
     return response;
   } catch (error) {

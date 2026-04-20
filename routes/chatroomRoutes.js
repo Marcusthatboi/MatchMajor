@@ -12,10 +12,11 @@ const { protect } = require('../server/middleware/authMiddleware_enhanced');
 
 router.use(protect); // All routes require authentication
 
+// Specific routes before parameterized routes
 router.get('/', getAllChatrooms);
 router.post('/', createChatroom);
-router.get('/:id', getChatroom);
 router.post('/join', joinChatroom);
 router.post('/leave', leaveChatroom);
+router.get('/:id', getChatroom);
 
 module.exports = router;

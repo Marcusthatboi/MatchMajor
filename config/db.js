@@ -15,17 +15,19 @@ const connectDB = async () => {
     console.log('?? MongoDB: Connecting to', process.env.MONGODB_URI);        
 
     const mongooseOptions = {
-      serverSelectionTimeoutMS: 15000,
-      socketTimeoutMS: 20000,
-      connectTimeoutMS: 15000,
+      serverSelectionTimeoutMS: 30000,
+      socketTimeoutMS: 45000,
+      connectTimeoutMS: 30000,
       family: 4,
-      bufferCommands: true,
+      bufferCommands: false,  // Disable buffering - fail fast if no connection available
       autoCreate: true,
-      maxPoolSize: 10,
-      minPoolSize: 2,
+      maxPoolSize: 20,
+      minPoolSize: 5,
       retryWrites: true,
-      retryReads: true
+      retryReads: true,
       // useNewUrlParser and useUnifiedTopology removed for Mongoose 6+ compatibility
+      // Connection pooling settings
+      waitQueueTimeoutMS: 30000
     };
 
     console.log('?? MongoDB: Calling mongoose.connect()...');

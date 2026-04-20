@@ -9,72 +9,72 @@ const chatroomSchema = new mongoose.Schema({
     minlength: [3, 'Name must be at least 3 characters'],
     maxlength: [100, 'Name cannot exceed 100 characters']
   },
-  
+
   description: {
     type: String,
     default: '',
     maxlength: [500, 'Description cannot exceed 500 characters']
   },
-  
+
   color: {
     type: String,
     default: '#09A6AD',
     match: [/^#[0-9A-F]{6}$/i, 'Invalid color format']
   },
-  
+
   // Creator of the chatroom
   creator: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: [true, 'Creator is required']
   },
-  
+
   // List of members in the chatroom
   members: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   }],
-  
+
   // Whether this is a custom study group or predefined
   isCustom: {
     type: Boolean,
     default: false
   },
-  
+
   // Member count
   memberCount: {
     type: Number,
     default: 1
   },
-  
+
   // Active users count
   activeNow: {
     type: Number,
     default: 1
   },
-  
+
   // Category for predefined chatrooms
   category: {
     type: String,
     enum: {
-      values: ['study', 'social', 'housing', 'sports', 'clubs', 'other'],
+      values: ['study', 'social', 'housing', 'sports', 'clubs', 'other'],       
       message: 'Invalid category'
     },
     default: 'other'
   },
-  
+
   // Last message timestamp (for sorting)
   lastMessageAt: {
     type: Date,
     default: Date.now
   },
-  
+
   // Privacy settings
   isPrivate: {
     type: Boolean,
     default: false
   },
-  
+
   // Archived status
   isArchived: {
     type: Boolean,
@@ -107,14 +107,17 @@ chatroomSchema.virtual('memberDetails', {
 /**
  * Pre-save middleware: Update member count
  */
-chatroomSchema.pre('save', async function(next) {
-  // Ensure creator is in members array
-  if (!this.members.includes(this.creator)) {
-    this.members.push(this.creator);
+chatroomSchema.pre('save', function() {
+  try {
+    // Ensure creator is in members array
+    if (!this.members.includes(this.creator)) {
+      this.members.push(this.creator);
+    }
+    this.memberCount = this.members.length;
+return;
+  } catch (error) {
+throw error;
   }
-  
-  this.memberCount = this.members.length;
-  next();
 });
 
 /**
@@ -124,7 +127,7 @@ chatroomSchema.methods.addMember = async function(userId) {
   if (this.members.includes(userId)) {
     throw new Error('User is already a member of this chatroom');
   }
-  
+
   this.members.push(userId);
   this.memberCount = this.members.length;
   await this.save();
@@ -137,12 +140,12 @@ chatroomSchema.methods.addMember = async function(userId) {
 chatroomSchema.methods.removeMember = async function(userId) {
   this.members = this.members.filter(id => id.toString() !== userId.toString());
   this.memberCount = this.members.length;
-  
+
   // If no members left, archive the chatroom
   if (this.memberCount === 0) {
     this.isArchived = true;
   }
-  
+
   await this.save();
   return this;
 };
@@ -193,7 +196,7 @@ chatroomSchema.methods.getInfo = function() {
 /**
  * Static method: Find by category
  */
-chatroomSchema.statics.findByCategory = function(category, limit = 20) {
+chatroomSchema.statics.findByCategory = function(category, limit = 20) {        
   return this.find({ category, isArchived: false })
     .sort({ lastMessageAt: -1 })
     .limit(limit);
@@ -225,3 +228,11 @@ chatroomSchema.set('toJSON', { virtuals: true });
 const Chatroom = mongoose.model('Chatroom', chatroomSchema);
 
 module.exports = Chatroom;
+
+
+
+
+
+
+
+

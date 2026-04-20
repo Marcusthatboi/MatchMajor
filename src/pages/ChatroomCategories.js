@@ -8,7 +8,8 @@ const ChatroomCategories = ({ onSelectCategory, user }) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    description: ''
+    description: '',
+    isPrivate: false
   });
   const [error, setError] = useState(null);
 
@@ -46,18 +47,26 @@ const ChatroomCategories = ({ onSelectCategory, user }) => {
     }
 
     try {
+      setError(null); // Clear previous errors
       const randomColor = predefinedColors[Math.floor(Math.random() * predefinedColors.length)];
-      const response = await apiCreateChatroom(formData.name, formData.description, randomColor);
+      console.log('Creating chatroom:', { name: formData.name, description: formData.description, color: randomColor });
       
-      if (response.success) {
+      const response = await apiCreateChatroom(formData.name, formData.description, randomColor, formData.isPrivate);
+      console.log('Create chatroom response:', response);
+      
+      if (response && response.success && response.data) {
+        console.log('Chatroom created successfully:', response.data);
         setChatrooms((prev) => [response.data, ...prev]);
-        setFormData({ name: '', description: '' });
+        setFormData({ name: '', description: '', isPrivate: false });
         setShowCreateModal(false);
-        setError(null);
+      } else {
+        console.error('Invalid response structure:', response);
+        setError(response?.message || 'Failed to create chatroom. Please try again.');
       }
     } catch (error) {
       console.error('Failed to create chatroom:', error);
-      setError('Failed to create chatroom');
+      const errorMsg = error?.response?.data?.message || error.message || 'Failed to create chatroom';
+      setError(errorMsg);
     }
   };
 
@@ -104,6 +113,8 @@ const ChatroomCategories = ({ onSelectCategory, user }) => {
 
               <div className="category-content">
                 {chatroom.isCustom && <span className="custom-badge">✨ Custom</span>}
+                {chatroom.isPrivate && <span className="private-badge">🔒 Private</span>}
+                {!chatroom.isPrivate && <span className="public-badge">🔓 Public</span>}
                 <h3>{chatroom.name}</h3>
                 <p className="category-description">{chatroom.description}</p>
 
@@ -136,6 +147,7 @@ const ChatroomCategories = ({ onSelectCategory, user }) => {
         <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h2>Create a New Chatroom</h2>
+            {error && <p className="modal-error">{error}</p>}
             <form onSubmit={handleCreateChatroom} className="create-chatroom-form">
               <div className="form-group">
                 <label htmlFor="chatroom-name">Chatroom Name</label>
@@ -167,13 +179,31 @@ const ChatroomCategories = ({ onSelectCategory, user }) => {
                 <span className="char-count">{formData.description.length}/150</span>
               </div>
 
+              <div className="form-group checkbox-group">
+                <label htmlFor="chatroom-privacy">
+                  <input
+                    id="chatroom-privacy"
+                    type="checkbox"
+                    name="isPrivate"
+                    checked={formData.isPrivate}
+                    onChange={(e) => setFormData({ ...formData, isPrivate: e.target.checked })}
+                  />
+                  <span className="checkbox-label">Private Chatroom</span>
+                </label>
+                <p className="privacy-hint">
+                  {formData.isPrivate 
+                    ? '🔒 Only you and invited members can access this chatroom' 
+                    : '🔓 Anyone can discover and join this chatroom'}
+                </p>
+              </div>
+
               <div className="modal-actions">
                 <button
                   type="button"
                   className="btn cancel"
                   onClick={() => {
                     setShowCreateModal(false);
-                    setFormData({ name: '', description: '' });
+                    setFormData({ name: '', description: '', isPrivate: false });
                     setError(null);
                   }}
                 >

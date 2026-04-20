@@ -19,7 +19,7 @@ const ChatRoom = ({ user }) => {
 
   // Load messages and posts when chatroom is selected
   useEffect(() => {
-    if (selectedCategory?.id) {
+    if (selectedCategory?._id) {
       loadMessages();
       loadPosts();
     }
@@ -28,7 +28,7 @@ const ChatRoom = ({ user }) => {
   const loadMessages = async () => {
     try {
       setLoading(true);
-      const response = await getMessages(selectedCategory.id);
+      const response = await getMessages(selectedCategory._id);
       if (response.success) {
         setMessages(response.data);
       }
@@ -41,7 +41,7 @@ const ChatRoom = ({ user }) => {
 
   const loadPosts = async () => {
     try {
-      const response = await getPosts(selectedCategory.id);
+      const response = await getPosts(selectedCategory._id);
       if (response.success) {
         setPosts(response.data);
       }
@@ -54,7 +54,7 @@ const ChatRoom = ({ user }) => {
     if (!input.trim() || !user) return;
     
     try {
-      const response = await apiSendMessage(selectedCategory.id, input.trim());
+      const response = await apiSendMessage(selectedCategory._id, input.trim());
       if (response.success) {
         setMessages((prev) => [...prev, response.data]);
         setInput('');
@@ -70,7 +70,7 @@ const ChatRoom = ({ user }) => {
     if (!newContent.trim() || !user) return;
 
     try {
-      const response = await apiCreatePost(selectedCategory.id, newContent.trim());
+      const response = await apiCreatePost(selectedCategory._id, newContent.trim());
       if (response.success) {
         setPosts((prev) => [response.data, ...prev]);
         setNewContent('');
