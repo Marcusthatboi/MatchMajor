@@ -4,6 +4,8 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Survey from './pages/Survey';
+import SurveyRoommate from './pages/SurveyRoommate';
+import SurveyStudy from './pages/SurveyStudy';
 import Profile from './pages/Profile';
 import Matches from './pages/Matches';
 import Posts from './pages/Posts';
@@ -47,6 +49,16 @@ const AppContent = () => {
             <Route path="/survey" element={
               <ProtectedRoute>
                 <Survey />
+              </ProtectedRoute>
+            } />
+            <Route path="/survey/roommate" element={
+              <ProtectedRoute>
+                <SurveyRoommate />
+              </ProtectedRoute>
+            } />
+            <Route path="/survey/study" element={
+              <ProtectedRoute>
+                <SurveyStudy />
               </ProtectedRoute>
             } />
             <Route path="/profile" element={

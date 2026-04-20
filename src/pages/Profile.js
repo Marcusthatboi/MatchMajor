@@ -172,7 +172,7 @@ const Profile = ({ user: userProp }) => {
               <label>Hobbies: {mergedUser.hobbies || 'Not specified'}</label>
             </div>
 
-            <Link to="/survey?section=roommate" className="edit-profile-btn">
+            <Link to="/survey/roommate" className="edit-profile-btn">
               Edit Roommate Preferences
             </Link>
           </div>
@@ -216,7 +216,7 @@ const Profile = ({ user: userProp }) => {
               <label>Study Style: {mergedUser.studyStyle || 'Not specified'}</label>
             </div>
 
-            <Link to="/survey?section=study" className="edit-profile-btn">
+            <Link to="/survey/study" className="edit-profile-btn">
               Edit Study Preferences
             </Link>
           </div>

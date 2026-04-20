@@ -47,10 +47,6 @@ const Navbar = ({ logoutHandler }) => {
         <div className="navbar-auth">
           {user ? (
             <>
-              <Link to="/profile" className="profile-link">
-                <i className="fas fa-user-circle"></i>
-                Profile
-              </Link>
               <div className="user-menu">
                 <span className="username">Hi, {user.username}</span>
                 <div className="dropdown-content">
