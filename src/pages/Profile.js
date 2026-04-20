@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { api } from '../api/index';
 import { useUser } from '../context/UserContext';
+import { getSurvey } from '../api/surveys';
 import './Profile.css';
 
 const getInitials = (name) => {
@@ -17,14 +17,16 @@ const getInitials = (name) => {
 const Profile = ({ user: userProp }) => {
   const { user: contextUser } = useUser();
   const user = userProp || contextUser;
-  const avatarUrl = user?.profilePhoto || user?.avatar || user?.image || null;
-  const initials = getInitials(user?.username);
-  const [orders, setOrders] = useState([]);
+  const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const mergedUser = profileData || user;
+  const avatarUrl = mergedUser?.profilePhoto || mergedUser?.avatar || mergedUser?.image || null;
+  const initials = getInitials(mergedUser?.username);
   
   useEffect(() => {
-    const fetchOrders = async () => {
+    const loadProfile = async () => {
       if (!user) {
         setLoading(false);
         setError('Unable to load profile');
@@ -32,33 +34,31 @@ const Profile = ({ user: userProp }) => {
       }
 
       try {
-        let response;
-
         try {
-          response = await api.get('/users');
-        } catch (legacyError) {
-          response = await api.get('/users');
-        }
+          const response = await getSurvey();
+          const survey = response?.survey || response?.data || null;
 
-        setOrders(response.data || response.orders || []);
+          setProfileData(survey ? { ...user, ...survey } : user);
+        } catch (surveyError) {
+          // If no survey exists yet, still show account info.
+          setProfileData(user);
+        }
         setError(null);
-      } catch (error) {
-        // Keep the profile usable even if order history fails.
-        setOrders([]);
-        setError(null);
+      } catch (loadError) {
+        setError('Failed to load profile');
       } finally {
         setLoading(false);
       }
     };
     
-    fetchOrders();
+    loadProfile();
   }, [user]);
   
   if (loading) {
     return <div className="loading">Loading profile data...</div>;
   }
   
-  if (!user) {
+  if (!mergedUser) {
     return <div className="error">Unable to load profile</div>;
   }
 
@@ -71,7 +71,7 @@ const Profile = ({ user: userProp }) => {
       <div className="profile-header">
         <div className="profile-avatar">
           {avatarUrl ? (
-            <img src={avatarUrl} alt={`${user.username}'s avatar`} />
+            <img src={avatarUrl} alt={`${mergedUser.username}'s avatar`} />
           ) : (
             initials
           )}
@@ -85,15 +85,15 @@ const Profile = ({ user: userProp }) => {
             <h2>Account Information</h2>
             
             <div className="info-group">
-              <label>Username: {user.username}</label>
+              <label>Username: {mergedUser.username}</label>
             </div>
             
             <div className="info-group">
-              <label>Email: {user.email}</label>
+              <label>Email: {mergedUser.email}</label>
             </div>
             
             <div className="info-group">
-              <label>Member Since: {new Date(user.createdAt).toLocaleDateString()}</label>
+              <label>Member Since: {mergedUser.createdAt ? new Date(mergedUser.createdAt).toLocaleDateString() : 'Not available'}</label>
             </div>
           </div>
           
@@ -101,28 +101,28 @@ const Profile = ({ user: userProp }) => {
             <h2>User Details</h2>
             
             <div className="info-group">
-              <label>Name: {user.name || 'Not specified'}</label>
+              <label>Name: {mergedUser.name || 'Not specified'}</label>
             </div>
 
             <div className="info-group">
-              <label>Major: {user.major || 'Not specified'}</label>
+              <label>Major: {mergedUser.major || 'Not specified'}</label>
             </div>
             
             <div className="info-group">
-              <label>Year: {user.year || 'Not specified'}</label>
+              <label>Year: {mergedUser.year || 'Not specified'}</label>
             </div>
             
             <div className="info-group">
-              <label>Gender: {user.gender || 'Not specified'}</label>
+              <label>Gender: {mergedUser.gender || 'Not specified'}</label>
               {/* There can be an "other" option */}
             </div>
           </div>
 
           <div className="profile-info">
             <h2>Bio</h2>
-            {user.goals ? (
+            {mergedUser.goals ? (
               <div className="info-group">
-                <p>{user.goals}</p>
+                <p>{mergedUser.goals}</p>
               </div>
             ) : (
               <div className="info-group">
@@ -137,39 +137,39 @@ const Profile = ({ user: userProp }) => {
             <h2>Roommate Preferences</h2>
             
             <div className="info-group">
-              <label>Sleep Schedule: {user.sleepSchedule || 'Not specified'}</label>
+              <label>Sleep Schedule: {mergedUser.sleepSchedule || 'Not specified'}</label>
             </div>
             
             <div className="info-group">
-              <label>Cleanliness: {user.cleanliness || 'Not specified'}</label>
+              <label>Cleanliness: {mergedUser.cleanliness || 'Not specified'}</label>
             </div>
             
             <div className="info-group">
-              <label>Visitor Policy: {user.visitorPolicy || user.vistors || user.visitors || 'Not specified'}</label>
+              <label>Visitor Policy: {mergedUser.visitorPolicy || mergedUser.vistors || mergedUser.visitors || 'Not specified'}</label>
             </div>
             
             <div className="info-group">
-              <label>Shared or Separate Items: {user.items || 'Not specified'}</label>
+              <label>Shared or Separate Items: {mergedUser.items || 'Not specified'}</label>
             </div>
             
             <div className="info-group">
-              <label>Pets: {user.pets || 'Not specified'}</label>
+              <label>Pets: {mergedUser.pets || 'Not specified'}</label>
             </div>
             
             <div className="info-group">
-              <label>Allergies: {user.allergies || 'Not specified'}</label>
+              <label>Allergies: {mergedUser.allergies || 'Not specified'}</label>
             </div>
             
             <div className="info-group">
-              <label>On-Campus or Off-Campus: {user.campusSelection || 'Not specified'}</label>
+              <label>On-Campus or Off-Campus: {mergedUser.campusSelection || 'Not specified'}</label>
             </div>
             
             <div className="info-group">
-              <label>Partier/Homebody: {user.socialBattery || 'Not specified'}</label>
+              <label>Partier/Homebody: {mergedUser.socialBattery || 'Not specified'}</label>
             </div>
             
             <div className="info-group">
-              <label>Hobbies: {user.hobbies || 'Not specified'}</label>
+              <label>Hobbies: {mergedUser.hobbies || 'Not specified'}</label>
             </div>
 
             <Link to="/survey?section=roommate" className="edit-profile-btn">
@@ -181,39 +181,39 @@ const Profile = ({ user: userProp }) => {
             <h2>Study Preferences</h2>
             
             <div className="info-group">
-              <label>Current Classes: {user.currentClasses || user.currentCourses || 'Not specified'}</label>
+              <label>Current Classes: {mergedUser.currentClasses || mergedUser.currentCourses || 'Not specified'}</label>
             </div>
 
             <div className="info-group">
-              <label>Study Goals: {user.studyGoals || 'Not specified'}</label>
+              <label>Study Goals: {mergedUser.studyGoals || 'Not specified'}</label>
             </div>
             
             <div className="info-group">
-              <label>Honors/Special Programs: {user.honors || user.specialPrograms || 'Not specified'}</label>
+              <label>Honors/Special Programs: {mergedUser.honors || mergedUser.specialPrograms || 'Not specified'}</label>
             </div>
             
             <div className="info-group">
-              <label>Study Location: {user.studyLocation || 'Not specified'}</label>
+              <label>Study Location: {mergedUser.studyLocation || 'Not specified'}</label>
             </div>
             
             <div className="info-group">
-              <label>Study Times: {user.studyTimes || 'Not specified'}</label>
+              <label>Study Times: {mergedUser.studyTimes || 'Not specified'}</label>
             </div>
             
             <div className="info-group">
-              <label>Ideal Group Size: {user.idealGroupSize || 'Not specified'}</label>
+              <label>Ideal Group Size: {mergedUser.idealGroupSize || 'Not specified'}</label>
             </div>
             
             <div className="info-group">
-              <label>Virtual or In-Person: {user.virtualOrInPerson || user.studyMode || 'Not specified'}</label>
+              <label>Virtual or In-Person: {mergedUser.virtualOrInPerson || mergedUser.studyMode || 'Not specified'}</label>
             </div>
             
             <div className="info-group">
-              <label>Study Habits: {user.studyHabits || 'Not specified'}</label>
+              <label>Study Habits: {mergedUser.studyHabits || 'Not specified'}</label>
             </div>
             
             <div className="info-group">
-              <label>Study Style: {user.studyStyle || 'Not specified'}</label>
+              <label>Study Style: {mergedUser.studyStyle || 'Not specified'}</label>
             </div>
 
             <Link to="/survey?section=study" className="edit-profile-btn">
@@ -227,7 +227,7 @@ const Profile = ({ user: userProp }) => {
             <h2>Additional Information</h2>
               <div className="info-group">
                 <p className="prompt">
-                  {orders.length > 0 ? `Order history loaded (${orders.length})` : 'No recent orders found'}
+                  Empty Conatainer for Future Profile Sections (maybe liked profiles)
                 </p>
               </div>
           </div>

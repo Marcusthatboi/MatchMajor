@@ -1,86 +1,196 @@
 import React, { useState } from 'react';
 import './Posts.css';
 
-const initialPosts = [
-  { id: 1, author: 'Alex', content: 'Working on my AI portfolio today! Anyone want to collaborate?', likes: 14 },
-  { id: 2, author: 'Jordan', content: 'Finished a data analysis project on college admissions trends.', likes: 21 },
-  { id: 3, author: 'Sam', content: 'Looking for a frontend partner for a 2-week build sprint.', likes: 18 },
-];
+const postCategories = {
+  roommate: {
+    switchLabel: 'Roommates',
+    pageTitle: 'Find a Roommate',
+    posts: [
+      {
+        id: 1,
+        name: 'John Doe',
+        year: 'Sophomore',
+        major: 'Marketing Major',
+        bio: 'Prefers a tidy shared space, early classes, and a quiet weeknight routine.',
+        score: '71%',
+      },
+      {
+        id: 2,
+        name: 'John Doe',
+        year: 'Sophomore',
+        major: 'Marketing Major',
+        bio: 'Looking for a roommate who is social, respectful, and open to apartment hunting soon.',
+        score: '71%',
+      },
+      {
+        id: 3,
+        name: 'John Doe',
+        year: 'Sophomore',
+        major: 'Marketing Major',
+        bio: 'Would love to live close to campus with someone who values a calm study environment.',
+        score: '71%',
+      },
+      {
+        id: 4,
+        name: 'John Doe',
+        year: 'Sophomore',
+        major: 'Marketing Major',
+        bio: 'Comfortable sharing chores and coordinating schedules around classes and work.',
+        score: '71%',
+      },
+      {
+        id: 5,
+        name: 'John Doe',
+        year: 'Sophomore',
+        major: 'Marketing Major',
+        bio: 'Interested in a space with plenty of natural light and a predictable routine.',
+        score: '71%',
+      },
+      {
+        id: 6,
+        name: 'John Doe',
+        year: 'Sophomore',
+        major: 'Marketing Major',
+        bio: 'Hoping to match with someone organized, communicative, and easygoing.',
+        score: '71%',
+      },
+    ],
+  },
+  study: {
+    switchLabel: 'Study Groups',
+    pageTitle: 'Study Together',
+    posts: [
+      {
+        id: 7,
+        title: "Jack's Study Group",
+        subject: 'Data Structures 101',
+        majors: 'Any',
+        location: 'Library Room 2B',
+        environment: 'Quiet',
+        openSeats: 2,
+        score: '82%',
+      },
+      {
+        id: 8,
+        title: "Sam's Study Group",
+        subject: 'Marketing 101',
+        majors: 'Business',
+        location: 'Business Hall 221',
+        environment: 'Social',
+        openSeats: 2,
+        score: '50%',
+      },
+      {
+        id: 9,
+        title: 'Study Group',
+        subject: 'Data Structures 101',
+        majors: 'Any',
+        location: 'Library Room 2B',
+        environment: 'Quiet',
+        openSeats: 2,
+        score: '71%',
+      },
+      {
+        id: 10,
+        title: 'Study Group',
+        subject: 'Data Structures 101',
+        majors: 'Any',
+        location: 'Library Room 2B',
+        environment: 'Quiet',
+        openSeats: 2,
+        score: '71%',
+      },
+    ],
+  },
+};
+
+const categoryOrder = ['roommate', 'study'];
+
+const AvatarBadge = () => <div className="avatar-badge" aria-hidden="true" />;
+
+const MiniAvatar = () => <div className="mini-avatar" aria-hidden="true" />;
+
+const PlusBadge = () => <div className="plus-badge" aria-hidden="true">+</div>;
+
+const RoommateCard = ({ post }) => (
+  <article className="template-card roommate-card">
+    <div className="roommate-card-header">
+      <AvatarBadge />
+      <h2>{post.name}</h2>
+    </div>
+    <div className="roommate-card-body">
+      <p>{post.year}</p>
+      <p>{post.major}</p>
+      <p className="roommate-card-label">About {post.name.split(' ')[0]}:</p>
+      <p className="roommate-card-bio">{post.bio}</p>
+    </div>
+    <div className="score-badge">{post.score}</div>
+  </article>
+);
+
+const StudyCard = ({ post }) => (
+  <article className="template-card study-card">
+    <div className="study-card-body">
+      <h2>{post.title}</h2>
+      <p><strong>Studying:</strong> {post.subject}</p>
+      <p><strong>Majors:</strong> {post.majors}</p>
+      <p><strong>Location:</strong> {post.location}</p>
+      <p><strong>Environment:</strong> {post.environment}</p>
+    </div>
+    <div className="study-card-footer">
+      <div className="study-card-icons">
+        <div className="study-card-action-row">
+          <PlusBadge />
+          <PlusBadge />
+        </div>
+        <div className="study-card-member-row">
+          <MiniAvatar />
+          <MiniAvatar />
+        </div>
+      </div>
+      <p className="study-card-seats">{post.openSeats} Open Seats</p>
+    </div>
+    <div className="score-badge">{post.score}</div>
+  </article>
+);
 
 const Posts = () => {
-  const [posts, setPosts] = useState(initialPosts);
-  const [showModal, setShowModal] = useState(false);
-  const [newAuthor, setNewAuthor] = useState('');
-  const [newContent, setNewContent] = useState('');
-
-  const handleLike = (id) => {
-    setPosts((prev) => prev.map((post) => (
-      post.id === id ? { ...post, likes: post.likes + 1 } : post
-    )));
-  };
-
-  const openCreate = () => setShowModal(true);
-
-  const handleSubmitPost = (e) => {
-    e.preventDefault();
-    const content = newContent.trim();
-    if (!content) return;
-    const author = newAuthor.trim() || 'Anonymous';
-    const newPost = { id: Date.now(), author, content, likes: 0 };
-    setPosts((prev) => [newPost, ...prev]);
-    setNewAuthor('');
-    setNewContent('');
-    setShowModal(false);
-  };
+  const [activeCategory, setActiveCategory] = useState('roommate');
+  const activeConfig = postCategories[activeCategory];
 
   return (
     <div className="posts-page">
-      <div className="posts-topbar">
-        <button className="create-post-btn" onClick={openCreate}>+ Create Post</button>
-      </div>
-
-      <h1>Community Posts</h1>
-
-      <div className="post-list">
-        {posts.map((post) => (
-          <article key={post.id} className="post-card">
-            <p className="post-info">{post.author}</p>
-            <p>{post.content}</p>
-            <div className="post-footer">
-              <button onClick={() => handleLike(post.id)}>❤️ {post.likes}</button>
-            </div>
-          </article>
-        ))}
-      </div>
-
-      {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h2>Create Post</h2>
-            <form onSubmit={handleSubmitPost} className="create-post-form">
-              <input
-                className="create-input"
-                placeholder="Your name (optional)"
-                value={newAuthor}
-                onChange={(e) => setNewAuthor(e.target.value)}
-                maxLength={60}
-              />
-              <textarea
-                className="create-textarea"
-                placeholder="What's on your mind?"
-                value={newContent}
-                onChange={(e) => setNewContent(e.target.value)}
-                rows={5}
-                maxLength={1000}
-              />
-              <div className="modal-actions">
-                <button type="button" className="btn cancel" onClick={() => setShowModal(false)}>Cancel</button>
-                <button type="submit" className="btn submit">Post</button>
-              </div>
-            </form>
+      <header className="posts-header">
+        <div className="posts-slider" role="tablist" aria-label="Post categories">
+          <div className={`posts-slider-track ${activeCategory === 'study' ? 'study-active' : ''}`}>
+            <span className="posts-slider-thumb" aria-hidden="true" />
+            {categoryOrder.map((category) => (
+              <button
+                key={category}
+                type="button"
+                className={`posts-slider-option ${activeCategory === category ? 'active' : ''}`}
+                onClick={() => setActiveCategory(category)}
+                role="tab"
+                aria-selected={activeCategory === category}
+              >
+                {postCategories[category].switchLabel}
+              </button>
+            ))}
           </div>
         </div>
-      )}
+
+        <h1>{activeConfig.pageTitle}</h1>
+      </header>
+
+      <section className={`posts-grid ${activeCategory}-grid`}>
+        {activeCategory === 'roommate' && activeConfig.posts.map((post) => (
+          <RoommateCard key={post.id} post={post} />
+        ))}
+
+        {activeCategory === 'study' && activeConfig.posts.map((post) => (
+          <StudyCard key={post.id} post={post} />
+        ))}
+      </section>
     </div>
   );
 };
