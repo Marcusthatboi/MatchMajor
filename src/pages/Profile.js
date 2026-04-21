@@ -132,6 +132,9 @@ const Profile = ({ user: userProp }) => {
                 <p className="prompt">Tell us about yourself!</p>
               </div>
             )}
+            <Link to="/survey" className="edit-profile-btn">
+              Edit Bio
+            </Link>
           </div>
         </div>
 
