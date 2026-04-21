@@ -13,6 +13,7 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api
 class APIClient {
   constructor(baseURL = API_BASE_URL) {
     this.baseURL = baseURL;
+    console.log('🔌 API Client initialized with base URL:', baseURL);
     this.client = axios.create({
       baseURL,
       timeout: 10000,
@@ -91,6 +92,7 @@ class APIClient {
     if (!skipCache) {
       const cached = this.cache.get(cacheKey);
       if (cached) {
+        console.log('💾 Cache hit:', url);
         this._trackMetric('cacheHit', { url, cacheKey });
         return cached;
       }
@@ -99,6 +101,7 @@ class APIClient {
     this._trackMetric('cacheMiss', { url });
 
     try {
+      console.log('📤 GET request:', { url: this.baseURL + url, params });
       const makeRequest = () => this.client.get(url, { params });
       
       // Retry on network errors if requested
@@ -106,12 +109,14 @@ class APIClient {
         ? await retryWithBackoff(makeRequest, 3, 1000)
         : await makeRequest();
 
+      console.log('📥 GET response:', { url, status: response.status, dataLength: JSON.stringify(response.data).length });
       this._trackMetric('request', { url, status: response.status });
 
       // Cache successful GET responses
       this.cache.set(cacheKey, response.data);
       return response.data;
     } catch (error) {
+      console.error('❌ GET error:', { url, status: error.response?.status, message: error.message });
       this._trackMetric('error', { url, error: error.message });
       throw error;
     }
@@ -128,12 +133,14 @@ class APIClient {
     const { retry = false } = options;
 
     try {
+      console.log('📤 POST request:', { url: this.baseURL + url, data });
       const makeRequest = () => this.client.post(url, data);
       
       const response = retry
         ? await retryWithBackoff(makeRequest, 3, 1000)
         : await makeRequest();
 
+      console.log('📥 POST response:', { url, status: response.status, data: response.data });
       this._trackMetric('request', { url, method: 'POST', status: response.status });
 
       // Invalidate cache on mutation
@@ -141,6 +148,7 @@ class APIClient {
 
       return response.data;
     } catch (error) {
+      console.error('❌ POST error:', { url, status: error.response?.status, data: error.response?.data, message: error.message });
       this._trackMetric('error', { url, method: 'POST', error: error.message });
       throw error;
     }

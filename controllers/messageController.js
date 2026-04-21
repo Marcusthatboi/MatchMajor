@@ -9,7 +9,7 @@ exports.getMessages = async (req, res) => {
     const { limit = 50 } = req.query;
 
     const messages = await Message.find({ chatroom: chatroomId })
-      .populate('user', 'username email')
+      .populate('user', 'username email profilePhoto')
       .sort('-createdAt')
       .limit(parseInt(limit));
 
@@ -29,50 +29,75 @@ exports.getMessages = async (req, res) => {
 // Send a message
 exports.sendMessage = async (req, res) => {
   try {
+    console.log('📨 sendMessage called with body:', req.body);
+    console.log('📨 User from token:', req.user);
+    
     const { chatroomId, text } = req.body;
 
     if (!text || !text.trim()) {
+      console.log('⚠️ Message text empty');
       return res.status(400).json({
         success: false,
         message: 'Message cannot be empty'
       });
     }
 
+    // Fetch full user from database
+    console.log('👤 Fetching user from database:', req.user._id);
+    const user = await require('../models/User').findById(req.user._id);
+    if (!user) {
+      console.log('❌ User not found in database:', req.user._id);
+      return res.status(401).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    console.log('✅ User found:', user.username);
+
     // Verify chatroom exists
-    const chatroom = await Chatroom.findById(chatroomId);
+    console.log('🔍 Finding chatroom:', chatroomId);
+    let chatroom = await Chatroom.findById(chatroomId);
     if (!chatroom) {
+      console.log('❌ Chatroom not found:', chatroomId);
       return res.status(404).json({
         success: false,
         message: 'Chatroom not found'
       });
     }
+    console.log('✅ Chatroom found');
 
-    // Verify user is a member
+    // Auto-add user to members if not already a member
     if (!chatroom.members.includes(req.user._id)) {
-      return res.status(403).json({
-        success: false,
-        message: 'You are not a member of this chatroom'
-      });
+      console.log('📝 Adding user to chatroom members');
+      chatroom.members.push(req.user._id);
+      chatroom.memberCount = chatroom.members.length;
+      await chatroom.save();
+      console.log('✅ User added to members');
     }
 
+    console.log('💾 Creating message');
     const message = await Message.create({
       chatroom: chatroomId,
       user: req.user._id,
-      username: req.user.username,
+      username: user.username,
       text: text.trim()
     });
+    console.log('✅ Message created:', message._id);
 
-    await message.populate('user', 'username email');
+    console.log('📥 Populating user info');
+    await message.populate('user', 'username email profilePhoto');
+    console.log('✅ Message populated');
 
     res.status(201).json({
       success: true,
       data: message
     });
   } catch (error) {
-    console.error(error);
+    console.error('❌ sendMessage error:', error.message);
+    console.error('❌ Full error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: error.message || 'Server error'
     });
   }
 };

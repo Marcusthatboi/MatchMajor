@@ -26,15 +26,21 @@ export const getPosts = async (chatroomId, limit = 50) => {
  */
 export const createPost = async (chatroomId, content, options = {}) => {
   try {
-    console.log('Creating post in chatroom:', chatroomId);
-    const response = await api.post(API_URL, {
-      chatroomId,
-      content,
-      ...options
-    });
+    console.log('📤 Creating post:', { chatroomId, content });
+    const requestBody = { chatroomId, content, ...options };
+    console.log('📋 Request body:', requestBody);
+    
+    const response = await api.post(API_URL, requestBody);
+    console.log('✅ Post created successfully:', response);
     return response;
   } catch (error) {
-    console.error('Create post error:', error);
+    console.error('❌ Create post error:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+      code: error.code,
+      fullError: error
+    });
     throw error;
   }
 };

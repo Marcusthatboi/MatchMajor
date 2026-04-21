@@ -25,13 +25,21 @@ export const getMessages = async (chatroomId, limit = 50) => {
  */
 export const sendMessage = async (chatroomId, text) => {
   try {
-    const response = await api.post(API_URL, {
-      chatroomId,
-      text
-    });
+    console.log('📤 Sending message:', { chatroomId, text });
+    const requestBody = { chatroomId, text };
+    console.log('📋 Request body:', requestBody);
+    
+    const response = await api.post(API_URL, requestBody);
+    console.log('✅ Message sent successfully:', response);
     return response;
   } catch (error) {
-    console.error('Send message error:', error);
+    console.error('❌ Send message error:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+      code: error.code,
+      fullError: error
+    });
     throw error;
   }
 };

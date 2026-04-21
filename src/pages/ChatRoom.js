@@ -23,7 +23,7 @@ const ChatRoom = ({ user }) => {
       loadMessages();
       loadPosts();
     }
-  }, [selectedCategory]);
+  }, [selectedCategory?._id]);
 
   const loadMessages = async () => {
     try {
@@ -31,6 +31,8 @@ const ChatRoom = ({ user }) => {
       const response = await getMessages(selectedCategory._id);
       if (response.success) {
         setMessages(response.data);
+      } else {
+        console.error('Failed to load messages:', response.message);
       }
     } catch (error) {
       console.error('Failed to load messages:', error);
@@ -44,6 +46,8 @@ const ChatRoom = ({ user }) => {
       const response = await getPosts(selectedCategory._id);
       if (response.success) {
         setPosts(response.data);
+      } else {
+        console.error('Failed to load posts:', response.message);
       }
     } catch (error) {
       console.error('Failed to load posts:', error);
@@ -51,33 +55,57 @@ const ChatRoom = ({ user }) => {
   };
 
   const sendMessage = async () => {
-    if (!input.trim() || !user) return;
+    if (!input.trim() || !user) {
+      console.warn('⚠️ Cannot send message: input empty or no user');
+      return;
+    }
     
     try {
+      console.log('📨 Attempting to send message:', { input, userId: user._id, chatroomId: selectedCategory._id });
       const response = await apiSendMessage(selectedCategory._id, input.trim());
+      console.log('📨 Send message response:', response);
+      
       if (response.success) {
+        console.log('✅ Message sent successfully');
         setMessages((prev) => [...prev, response.data]);
         setInput('');
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        const errorMsg = response.message || 'Unknown error';
+        console.error('❌ API returned failure:', errorMsg);
+        alert('Failed to send message: ' + errorMsg);
       }
     } catch (error) {
-      console.error('Failed to send message:', error);
+      console.error('❌ Exception while sending message:', error);
+      alert('Failed to send message. Please check console for details.');
     }
   };
 
   const handleCreatePost = async (e) => {
     e.preventDefault();
-    if (!newContent.trim() || !user) return;
+    if (!newContent.trim() || !user) {
+      console.warn('⚠️ Cannot create post: content empty or no user');
+      return;
+    }
 
     try {
+      console.log('📝 Attempting to create post:', { content: newContent, userId: user._id, chatroomId: selectedCategory._id });
       const response = await apiCreatePost(selectedCategory._id, newContent.trim());
+      console.log('📝 Create post response:', response);
+      
       if (response.success) {
+        console.log('✅ Post created successfully');
         setPosts((prev) => [response.data, ...prev]);
         setNewContent('');
         setShowPostModal(false);
+      } else {
+        const errorMsg = response.message || 'Unknown error';
+        console.error('❌ API returned failure:', errorMsg);
+        alert('Failed to create post: ' + errorMsg);
       }
     } catch (error) {
-      console.error('Failed to create post:', error);
+      console.error('❌ Exception while creating post:', error);
+      alert('Failed to create post. Please check console for details.');
     }
   };
 
@@ -133,6 +161,24 @@ const ChatRoom = ({ user }) => {
     return `${days}d ago`;
   };
 
+  const getInitials = (name) => {
+    if (!name) return '?';
+    return name
+      .split(' ')
+      .map((part) => part[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase();
+  };
+
+  const getUserAvatar = (message) => {
+    // Check if message has user profile photo
+    if (message.user?.profilePhoto) {
+      return message.user.profilePhoto;
+    }
+    return null;
+  };
+
   return (
     <>
       {!selectedCategory ? (
@@ -179,7 +225,17 @@ const ChatRoom = ({ user }) => {
                 {loading && <p>Loading messages...</p>}
                 {messages.map((msg) => (
                   <div key={msg._id} className={`chat-message ${msg.user?._id === user?._id ? 'self' : ''}`}>
-                    <strong>{msg.username}:</strong> {msg.text}
+                    <div className="message-avatar">
+                      {getUserAvatar(msg) ? (
+                        <img src={getUserAvatar(msg)} alt={msg.username} />
+                      ) : (
+                        <div className="avatar-initials">{getInitials(msg.username)}</div>
+                      )}
+                    </div>
+                    <div className="message-content">
+                      <strong className="message-username">{msg.username}</strong>
+                      <p className="message-text">{msg.text}</p>
+                    </div>
                   </div>
                 ))}
                 <div ref={messagesEndRef} />

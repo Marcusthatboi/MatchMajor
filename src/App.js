@@ -84,7 +84,7 @@ const AppContent = () => {
             } />
             <Route path="/chat" element={
               <ProtectedRoute>
-                <ChatRoom />
+                <ChatRoom user={user} />
               </ProtectedRoute>
             } />
             {/* Catch-all */}
