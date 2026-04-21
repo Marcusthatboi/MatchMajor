@@ -41,6 +41,54 @@
   background-color: #0097a7;
 }
 
+.posts-slider {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: min(100%, 460px);
+  margin: 0 auto 24px;
+  padding: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.22);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.14);
+}
+
+.posts-slider-thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  height: calc(100% - 8px);
+  border-radius: 6px;
+  background: white;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+  transition: transform 0.22s ease;
+}
+
+.posts-slider-thumb.study {
+  transform: translateX(100%);
+}
+
+.posts-slider-option {
+  position: relative;
+  z-index: 1;
+  min-height: 42px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: white;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.posts-slider-option.active {
+  color: var(--brown);
+}
+
 /* Modal Styles */
 .modal-overlay {
   position: fixed;
@@ -115,15 +163,95 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+.profile-clickable-post {
+  cursor: pointer;
+}
+
+.profile-clickable-post:focus-visible {
+  outline: 3px solid rgba(9, 166, 173, 0.35);
+  outline-offset: 3px;
+}
+
+.profile-clickable-post:hover .poster-panel {
+  border-color: var(--primary-cyan);
+}
+
 .post-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 16px;
+  gap: 14px;
+}
+
+.poster-panel {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 14px;
+  width: 100%;
+  padding: 14px;
+  border-radius: 8px;
+  border: 1px solid #e8e1d5;
+  background: #fbfaf7;
+}
+
+.poster-panel.study {
+  border-color: #ddd9f5;
+  background: #fbfbff;
+}
+
+.poster-avatar {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--brown);
+  color: white;
+  font-weight: 800;
+  font-size: 1.15rem;
+}
+
+.poster-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.poster-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.thread-badge {
+  flex: 0 0 auto;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: #f0ede7;
+  color: var(--brown);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.view-profile-hint {
+  display: inline-block;
+  margin-top: 4px;
+  color: var(--primary-cyan);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.poster-panel.study .thread-badge {
+  background: #eceafd;
+  color: #4f3dcc;
 }
 
 .post-author-info {
   flex: 1;
+  min-width: 0;
 }
 
 .post-author-info h3 {
@@ -138,6 +266,40 @@
   color: #999;
   margin-top: 4px;
   display: block;
+}
+
+.poster-detail-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.poster-detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: white;
+  border: 1px solid #e6e6e6;
+  color: #3b352f;
+  font-size: 0.82rem;
+  line-height: 1.2;
+}
+
+.poster-detail strong {
+  color: #7a6a58;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.poster-summary {
+  margin: 12px 0 0;
+  color: #5f5a54;
+  font-size: 0.92rem;
+  line-height: 1.45;
 }
 
 .delete-btn {
@@ -249,6 +411,12 @@
     padding: 16px;
   }
 
+  .poster-title-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
   .modal-content {
     width: 95%;
   }
@@ -256,22 +424,6 @@
   .posts-header p {
     font-size: 1rem;
   }
-}
-
-.posts-slider-option {
-  position: relative;
-  z-index: 1;
-  border: none;
-  background: transparent;
-  border-radius: 999px;
-  padding: 12px 16px;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.posts-slider-option.active {
-  color: #111111;
 }
 
 .posts-grid {
@@ -497,6 +649,16 @@
   .posts-slider-option {
     padding: 11px 10px;
     font-size: 0.92rem;
+  }
+
+  .poster-panel {
+    grid-template-columns: 44px minmax(0, 1fr);
+    padding: 12px;
+  }
+
+  .poster-avatar {
+    width: 44px;
+    height: 44px;
   }
 
   .study-card-footer {

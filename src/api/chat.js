@@ -1,17 +1,22 @@
 // src/api/chat.js
 import { api } from './index';
 
-const API_URL = process.env.NODE_ENV === 'production' 
-  ? '/chat' 
-  : '/chat';
+const API_URL = '/messages';
 
 /**
  * Get recent chat messages
  */
-export const getMessages = async (limit = 10) => {
+export const getMessages = async (chatroomId, limit = 10) => {
   try {
-    console.log('Fetching messages from:', `${API_URL}/messages?limit=${limit}`);
-    const response = await api.get(`${API_URL}/messages`, { params: { limit }, skipCache: true });
+    if (!chatroomId) {
+      return {
+        success: true,
+        data: []
+      };
+    }
+
+    console.log('Fetching messages for chatroom:', chatroomId);
+    const response = await api.get(`${API_URL}/${chatroomId}`, { params: { limit }, skipCache: true });
     return response;
   } catch (error) {
     console.error('Get messages error:', {
@@ -37,7 +42,7 @@ export const getMessages = async (limit = 10) => {
 export const sendMessage = async (text) => {
   try {
     console.log('Sending message:', text);
-    const response = await api.post(`${API_URL}/messages`, { text });
+    const response = await api.post(API_URL, { text });
     return response;
   } catch (error) {
     console.error('Send message error:', {

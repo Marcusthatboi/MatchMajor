@@ -118,14 +118,13 @@ productSchema.virtual('discount').get(function() {
 /**
  * Pre-save middleware: Update inStock status based on stock quantity
  */
-productSchema.pre('save', async function(next) {
+productSchema.pre('save', async function() {
   // Automatically set inStock based on stock quantity
   if (this.stock <= 0) {
     this.inStock = false;
   } else {
     this.inStock = true;
   }
-  next();
 });
 
 /**

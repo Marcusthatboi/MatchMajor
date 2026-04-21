@@ -104,7 +104,13 @@ export function handleAPIError(error, endpoint = 'Unknown') {
     
     // Try multiple message extraction patterns
     let message = 'API Error';
-    if (data?.message) {
+    if (
+      process.env.NODE_ENV !== 'production' &&
+      data?.message === 'Server error' &&
+      (data?.error || data?.debugInfo?.originalError)
+    ) {
+      message = data.error || data.debugInfo.originalError;
+    } else if (data?.message) {
       message = data.message;
     } else if (data?.error) {
       message = data.error;

@@ -211,6 +211,37 @@
   background-color: #45a049;
 }
 
+.readonly-profile-page .profile-info {
+  min-height: 220px;
+}
+
+.readonly-profile-grid {
+  width: min(100%, 1120px);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.profile-secondary-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  border-radius: 4px;
+  background: var(--primary-cyan);
+  color: white;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.profile-secondary-link:hover {
+  background: #0097a7;
+}
+
+.profile-header-link {
+  margin-top: 14px;
+}
+
 .order-history {
   margin-top: 30px;
 }
@@ -306,6 +337,10 @@
 
 @media (max-width: 768px) {
   .profile-content {
+    grid-template-columns: 1fr;
+  }
+
+  .readonly-profile-grid {
     grid-template-columns: 1fr;
   }
 

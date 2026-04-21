@@ -82,7 +82,7 @@ cartSchema.virtual('itemCount').get(function() {
 /**
  * Pre-save middleware: Recalculate totals
  */
-cartSchema.pre('save', async function(next) {
+cartSchema.pre('save', async function() {
   // Calculate subtotal
   this.subtotal = this.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   
@@ -93,8 +93,6 @@ cartSchema.pre('save', async function(next) {
   if (this.total < 0) {
     this.total = 0;
   }
-  
-  next();
 });
 
 /**

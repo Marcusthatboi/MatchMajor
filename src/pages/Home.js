@@ -4,7 +4,15 @@ import { Link } from 'react-router-dom';
 import { getMatches } from '../api/matches';
 import { getPostsByChatroom as getPosts } from '../api/posts';
 import { getMessages } from '../api/chat';
+import { getAllChatrooms } from '../api/chatrooms';
 import './Home.css';
+
+const findRoomByKeywords = (rooms, keywords) => {
+  return rooms.find(room => {
+    const searchable = `${room.name || ''} ${room.description || ''} ${room.category || ''}`.toLowerCase();
+    return keywords.some(keyword => searchable.includes(keyword));
+  });
+};
 
 const Home = () => {
   const [matches, setMatches] = useState([]);
@@ -16,11 +24,18 @@ const Home = () => {
   useEffect(() => {
     const fetchAllData = async () => {
       setLoading(true);
+      const chatroomsResult = await getAllChatrooms().catch(error => {
+        console.error('Error fetching home chatrooms:', error);
+        return { success: false, data: [] };
+      });
+      const chatrooms = chatroomsResult.success ? chatroomsResult.data || [] : [];
+      const postsRoom = findRoomByKeywords(chatrooms, ['roommate', 'roomate', 'housing', 'study', 'posts']) || chatrooms[0];
+      const messagesRoom = findRoomByKeywords(chatrooms, ['study', 'group', 'class', 'project']) || postsRoom;
 
       const [matchesResult, postsResult, messagesResult] = await Promise.allSettled([
         getMatches(),
-        getPosts(2),
-        getMessages(3)
+        postsRoom?._id ? getPosts(postsRoom._id, 2) : Promise.resolve({ success: true, data: [] }),
+        messagesRoom?._id ? getMessages(messagesRoom._id, 3) : Promise.resolve({ success: true, data: [] })
       ]);
 
       const nextErrors = {};
@@ -99,9 +114,9 @@ const Home = () => {
               ) : posts.length > 0 ? (
                 posts.slice(0, 2).map((post) => (
                   <div key={post._id} className="post-preview">
-                    <p className="post-author">{post.author}</p>
+                    <p className="post-author">{post.authorName || post.author?.username || 'Anonymous'}</p>
                     <p className="post-content">{post.content.substring(0, 60)}...</p>
-                    <span className="post-likes">❤️ {post.likes || 0}</span>
+                    <span className="post-likes">Likes: {post.likeCount || post.likes?.length || 0}</span>
                   </div>
                 ))
               ) : (
@@ -122,7 +137,7 @@ const Home = () => {
               ) : messages.length > 0 ? (
                 messages.slice(-3).map((msg) => (
                   <div key={msg._id} className="chat-message-preview">
-                    <strong>{msg.user}:</strong> {msg.text}
+                    <strong>{msg.username || msg.user?.username || 'Anonymous'}:</strong> {msg.text}
                   </div>
                 ))
               ) : (

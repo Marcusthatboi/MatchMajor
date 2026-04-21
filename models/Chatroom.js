@@ -1,6 +1,8 @@
 // server/models/Chatroom.js
 const mongoose = require('mongoose');
 
+const idsMatch = (left, right) => left?.toString() === right?.toString();
+
 const chatroomSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -110,7 +112,7 @@ chatroomSchema.virtual('memberDetails', {
 chatroomSchema.pre('save', function() {
   try {
     // Ensure creator is in members array
-    if (!this.members.includes(this.creator)) {
+    if (!this.members.some(memberId => idsMatch(memberId, this.creator))) {
       this.members.push(this.creator);
     }
     this.memberCount = this.members.length;
@@ -124,7 +126,7 @@ throw error;
  * Instance method: Add member to chatroom
  */
 chatroomSchema.methods.addMember = async function(userId) {
-  if (this.members.includes(userId)) {
+  if (this.members.some(memberId => idsMatch(memberId, userId))) {
     throw new Error('User is already a member of this chatroom');
   }
 
@@ -154,14 +156,14 @@ chatroomSchema.methods.removeMember = async function(userId) {
  * Instance method: Check if user is member
  */
 chatroomSchema.methods.isMember = function(userId) {
-  return this.members.some(id => id.toString() === userId.toString());
+  return this.members.some(id => idsMatch(id, userId));
 };
 
 /**
  * Instance method: Is user creator
  */
 chatroomSchema.methods.isCreator = function(userId) {
-  return this.creator.toString() === userId.toString();
+  return idsMatch(this.creator, userId);
 };
 
 /**

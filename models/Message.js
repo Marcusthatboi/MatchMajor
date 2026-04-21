@@ -76,7 +76,7 @@ messageSchema.index({ replyTo: 1 });
 /**
  * Pre-save middleware: Validate message
  */
-messageSchema.pre('save', async function(next) {
+messageSchema.pre('save', async function() {
   // Check if chatroom exists
   const Chatroom = mongoose.model('Chatroom');
   const chatroom = await Chatroom.findById(this.chatroom);
@@ -84,8 +84,6 @@ messageSchema.pre('save', async function(next) {
   if (!chatroom) {
     throw new Error('Referenced chatroom does not exist');
   }
-  
-  next();
 });
 
 /**

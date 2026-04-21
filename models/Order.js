@@ -141,7 +141,7 @@ orderSchema.virtual('itemCount').get(function() {
 /**
  * Pre-save middleware: Initialize status history
  */
-orderSchema.pre('save', async function(next) {
+orderSchema.pre('save', async function() {
   if (this.isNew) {
     this.statusHistory = [{
       status: this.status,
@@ -149,7 +149,6 @@ orderSchema.pre('save', async function(next) {
       notes: 'Order created'
     }];
   }
-  next();
 });
 
 /**

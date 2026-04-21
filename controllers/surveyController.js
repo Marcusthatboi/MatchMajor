@@ -106,17 +106,19 @@ exports.getSpecificUserSurvey = async (req, res) => {
     const { userId } = req.params;
 
     const survey = await Survey.findOne({ userId }).populate('userId', 'username email profilePhoto');
+    const user = survey?.userId || await User.findById(userId).select('username email profilePhoto createdAt');
 
-    if (!survey) {
+    if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'Survey not found for this user'
+        message: 'User not found'
       });
     }
 
     res.json({
       success: true,
-      survey
+      survey,
+      user
     });
   } catch (error) {
     console.error(error);

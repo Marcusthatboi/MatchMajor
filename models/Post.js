@@ -104,7 +104,7 @@ postSchema.virtual('commentCount').get(function() {
 /**
  * Pre-save middleware: Validate chatroom and author
  */
-postSchema.pre('save', async function(next) {
+postSchema.pre('save', async function() {
   if (this.isNew) {
     // Validate chatroom exists
     const Chatroom = mongoose.model('Chatroom');
@@ -114,8 +114,6 @@ postSchema.pre('save', async function(next) {
       throw new Error('Referenced chatroom does not exist');
     }
   }
-  
-  next();
 });
 
 /**

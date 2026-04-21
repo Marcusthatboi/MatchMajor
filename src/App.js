@@ -7,6 +7,7 @@ import Survey from './pages/Survey';
 import SurveyRoommate from './pages/SurveyRoommate';
 import SurveyStudy from './pages/SurveyStudy';
 import Profile from './pages/Profile';
+import UserProfile from './pages/UserProfile';
 import Matches from './pages/Matches';
 import Posts from './pages/Posts';
 import ChatRoom from './pages/ChatRoom';
@@ -64,6 +65,11 @@ const AppContent = () => {
             <Route path="/profile" element={
               <ProtectedRoute>
                 <Profile user={user} />
+              </ProtectedRoute>
+            } />
+            <Route path="/profile/:userId" element={
+              <ProtectedRoute>
+                <UserProfile />
               </ProtectedRoute>
             } />
             <Route path="/matches" element={

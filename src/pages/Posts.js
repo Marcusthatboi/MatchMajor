@@ -1,12 +1,37 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { getPosts, createPost, likePost, addComment, deletePost } from '../api/chatroomPosts';
 import { getAllChatrooms, createChatroom } from '../api/chatrooms';
 import './Posts.css';
 
+const POST_CHANNELS = {
+  roommate: {
+    label: 'Roommate Posts',
+    title: 'Roommate Posts',
+    description: 'Find roommates, share housing needs, and compare living preferences',
+    roomName: 'Roommate Posts',
+    roomDescription: 'Find roommates and share housing preferences',
+    color: '#09A6AD',
+    keywords: ['roommate', 'roomate', 'housing', 'dorm']
+  },
+  study: {
+    label: 'Study Group Posts',
+    title: 'Study Group Posts',
+    description: 'Create study groups, ask class questions, and find project partners',
+    roomName: 'Study Group Posts',
+    roomDescription: 'Find study groups and academic partners',
+    color: '#7C5CFF',
+    keywords: ['study', 'group', 'class', 'project']
+  }
+};
+
 const Posts = () => {
   const { user } = useUser();
+  const navigate = useNavigate();
 
+  const [activePostType, setActivePostType] = useState('roommate');
+  const [postRooms, setPostRooms] = useState({});
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -17,11 +42,21 @@ const Posts = () => {
   const [commentText, setCommentText] = useState({});
   const [likedPosts, setLikedPosts] = useState(new Set());
   const [chatroomId, setChatroomId] = useState(null);
+  const activeChannel = POST_CHANNELS[activePostType];
 
   // Initialize and load posts on mount
   useEffect(() => {
-    initializeCommunityPosts();
-  }, []);
+    initializePostRooms();
+  }, [user?._id]);
+
+  useEffect(() => {
+    const activeRoomId = postRooms[activePostType]?._id;
+    if (activeRoomId) {
+      setChatroomId(activeRoomId);
+      setExpandedPostId(null);
+      loadPosts(activeRoomId);
+    }
+  }, [activePostType, postRooms]);
 
   // Track liked posts for UI
   useEffect(() => {
@@ -38,45 +73,55 @@ const Posts = () => {
     }
   }, [posts, user]);
 
-  const initializeCommunityPosts = async () => {
+  const findChannelRoom = (rooms, channel) => {
+    return rooms.find(room => {
+      const searchable = `${room.name || ''} ${room.description || ''} ${room.category || ''}`.toLowerCase();
+      return channel.keywords.some(keyword => searchable.includes(keyword));
+    });
+  };
+
+  const initializePostRooms = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Try to get all chatrooms
       const chatroomsResponse = await getAllChatrooms();
-      
-      if (chatroomsResponse.success && chatroomsResponse.data?.length > 0) {
-        // Look for a Community chatroom, or use the first one
-        const communityRoom = chatroomsResponse.data.find(
-          room => room.name.toLowerCase().includes('community') || room.name.toLowerCase().includes('posts')
-        ) || chatroomsResponse.data[0];
-        
-        setChatroomId(communityRoom._id);
-        await loadPosts(communityRoom._id);
-      } else {
-        // No chatrooms exist, create a default one
-        if (user?._id) {
+      const rooms = chatroomsResponse.success ? chatroomsResponse.data || [] : [];
+      const nextPostRooms = {};
+
+      for (const [type, channel] of Object.entries(POST_CHANNELS)) {
+        let room = findChannelRoom(rooms, channel);
+
+        if (!room && user?._id) {
           const createResponse = await createChatroom(
-            'Community Posts',
-            'Share your thoughts and connect with fellow students',
-            '#09A6AD',
+            channel.roomName,
+            channel.roomDescription,
+            channel.color,
             false
           );
-          
+
           if (createResponse.success) {
-            setChatroomId(createResponse.data._id);
-            await loadPosts(createResponse.data._id);
-          } else {
-            setError('Could not create community chatroom');
+            room = createResponse.data;
           }
-        } else {
-          setError('Please log in to view posts');
+        }
+
+        if (room) {
+          nextPostRooms[type] = room;
         }
       }
+
+      if (!nextPostRooms[activePostType]) {
+        setPosts([]);
+        setError(user ? 'Could not load this post room' : 'Please log in to view posts');
+        return;
+      }
+
+      setPostRooms(nextPostRooms);
+      setChatroomId(nextPostRooms[activePostType]._id);
+      await loadPosts(nextPostRooms[activePostType]._id);
     } catch (err) {
       console.error('Error initializing posts:', err);
-      setError('Failed to load community posts. Please try again later.');
+      setError('Failed to load posts. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -112,7 +157,7 @@ const Posts = () => {
       setSubmitting(true);
       const response = await createPost(chatroomId, newPostContent.trim());
       if (response.success) {
-        setPosts([response.data, ...posts]);
+        setPosts(currentPosts => [response.data, ...currentPosts]);
         setNewPostContent('');
         setShowPostModal(false);
       } else {
@@ -191,11 +236,97 @@ const Posts = () => {
     return user?._id === postAuthorId;
   };
 
+  const getAuthorProfile = (post) => {
+    return post.author?.survey || {};
+  };
+
+  const getPostAuthorId = (post) => {
+    return typeof post.author === 'object' ? post.author?._id : post.author;
+  };
+
+  const getAuthorName = (post) => {
+    const profile = getAuthorProfile(post);
+    return profile.name || post.authorName || post.author?.username || 'Anonymous';
+  };
+
+  const getAuthorInitial = (post) => {
+    return getAuthorName(post).charAt(0).toUpperCase();
+  };
+
+  const getPosterDetails = (post) => {
+    const profile = getAuthorProfile(post);
+
+    if (activePostType === 'roommate') {
+      return [
+        { label: 'Year', value: profile.year },
+        { label: 'Campus', value: profile.campusSelection },
+        { label: 'Sleep', value: profile.sleepSchedule },
+        { label: 'Cleanliness', value: profile.cleanliness },
+        { label: 'Social', value: profile.socialBattery }
+      ].filter(detail => detail.value);
+    }
+
+    return [
+      { label: 'Major', value: profile.major },
+      { label: 'Year', value: profile.year },
+      { label: 'Format', value: profile.virtualOrInPerson },
+      { label: 'Location', value: profile.studyLocation },
+      { label: 'Time', value: profile.studyTimes },
+      { label: 'Group', value: profile.idealGroupSize }
+    ].filter(detail => detail.value);
+  };
+
+  const getPosterSummary = (post) => {
+    const profile = getAuthorProfile(post);
+
+    if (activePostType === 'roommate') {
+      return profile.bio || profile.hobbies || profile.visitorPolicy || 'Roommate profile details have not been added yet.';
+    }
+
+    return profile.studyGoals || profile.studyHabits || profile.studyStyle || profile.bio || 'Study profile details have not been added yet.';
+  };
+
+  const openPosterProfile = (post) => {
+    const authorId = getPostAuthorId(post);
+    if (authorId) {
+      navigate(`/profile/${authorId}`);
+    }
+  };
+
+  const handlePostCardClick = (event, post) => {
+    if (event.target.closest('button, a, input, textarea, form')) {
+      return;
+    }
+
+    openPosterProfile(post);
+  };
+
+  const handlePostCardKeyDown = (event, post) => {
+    if (event.key === 'Enter') {
+      openPosterProfile(post);
+    }
+  };
+
   return (
     <div className="posts-page">
       <div className="posts-header">
-        <h1>Community Posts</h1>
-        <p>Share your thoughts and connect with fellow students</p>
+        <h1>{activeChannel.title}</h1>
+        <p>{activeChannel.description}</p>
+        <div className="posts-slider" role="tablist" aria-label="Post type">
+          <span className={`posts-slider-thumb ${activePostType}`} aria-hidden="true" />
+          {Object.entries(POST_CHANNELS).map(([type, channel]) => (
+            <button
+              key={type}
+              type="button"
+              role="tab"
+              aria-selected={activePostType === type}
+              className={`posts-slider-option ${activePostType === type ? 'active' : ''}`}
+              onClick={() => setActivePostType(type)}
+            >
+              {channel.label}
+            </button>
+          ))}
+        </div>
         {user && (
           <button 
             className="create-post-btn"
@@ -229,7 +360,7 @@ const Posts = () => {
         <div className="modal-overlay" onClick={() => setShowPostModal(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Create a Post</h2>
+              <h2>Create {activeChannel.label}</h2>
               <button 
                 className="close-btn"
                 onClick={() => setShowPostModal(false)}
@@ -241,7 +372,7 @@ const Posts = () => {
               <textarea
                 value={newPostContent}
                 onChange={(e) => setNewPostContent(e.target.value)}
-                placeholder="What's on your mind? Share your thoughts..."
+                placeholder={activePostType === 'roommate' ? 'Share what you are looking for in a roommate...' : 'Share the class, topic, schedule, or project you want to study...'}
                 rows="5"
                 style={{
                   width: '100%',
@@ -293,16 +424,45 @@ const Posts = () => {
         </div>
       ) : posts.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '40px 20px', color: '#999' }}>
-          <p>No posts yet. {user ? 'Be the first to post!' : 'Log in to create a post!'}</p>
+          <p>No {activeChannel.label.toLowerCase()} yet. {user ? 'Be the first to post!' : 'Log in to create a post!'}</p>
         </div>
       ) : (
         <div className="posts-container">
           {posts.map((post) => (
-            <div key={post._id} className="post-card">
+            <div
+              key={post._id}
+              className="post-card profile-clickable-post"
+              role="link"
+              tabIndex={0}
+              onClick={(event) => handlePostCardClick(event, post)}
+              onKeyDown={(event) => handlePostCardKeyDown(event, post)}
+            >
               <div className="post-header">
-                <div className="post-author-info">
-                  <h3>{post.authorName || post.author?.username || 'Anonymous'}</h3>
-                  <span className="post-date">{formatDate(post.createdAt)}</span>
+                <div className={`poster-panel ${activePostType}`}>
+                  <div className="poster-avatar" aria-hidden="true">
+                    {post.author?.profilePhoto ? (
+                      <img src={post.author.profilePhoto} alt="" />
+                    ) : (
+                      <span>{getAuthorInitial(post)}</span>
+                    )}
+                  </div>
+                  <div className="post-author-info">
+                    <div className="poster-title-row">
+                      <h3>{getAuthorName(post)}</h3>
+                      <span className="thread-badge">{activeChannel.label}</span>
+                    </div>
+                    <span className="view-profile-hint">View profile</span>
+                    <span className="post-date">{formatDate(post.createdAt)}</span>
+                    <div className="poster-detail-grid">
+                      {getPosterDetails(post).map(detail => (
+                        <span key={detail.label} className="poster-detail">
+                          <strong>{detail.label}</strong>
+                          {detail.value}
+                        </span>
+                      ))}
+                    </div>
+                    <p className="poster-summary">{getPosterSummary(post)}</p>
+                  </div>
                 </div>
                 {isPostOwner(post.author?._id || post.author) && (
                   <button

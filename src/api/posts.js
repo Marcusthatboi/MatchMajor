@@ -1,7 +1,7 @@
 // src/api/posts.js
 import { api } from './index';
 
-const API_URL = '/api/posts';
+const API_URL = '/posts';
 
 /**
  * Get posts for a specific chatroom
