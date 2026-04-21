@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { getPosts, createPost, likePost, addComment, deletePost, requestRoommateJoin, respondToRoommateRequest } from '../api/chatroomPosts';
@@ -27,6 +27,13 @@ const POST_CHANNELS = {
   }
 };
 
+const findChannelRoom = (rooms, channel) => {
+  return rooms.find(room => {
+    const searchable = `${room.name || ''} ${room.description || ''} ${room.category || ''}`.toLowerCase();
+    return channel.keywords.some(keyword => searchable.includes(keyword));
+  });
+};
+
 const Posts = () => {
   const { user } = useUser();
   const navigate = useNavigate();
@@ -34,7 +41,8 @@ const Posts = () => {
   const [activePostType, setActivePostType] = useState('roommate');
   const [postRooms, setPostRooms] = useState({});
   const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [roomsLoading, setRoomsLoading] = useState(true);
+  const [postsLoading, setPostsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showPostModal, setShowPostModal] = useState(false);
   const [newPostContent, setNewPostContent] = useState('');
@@ -49,11 +57,99 @@ const Posts = () => {
   const [likedPosts, setLikedPosts] = useState(new Set());
   const [chatroomId, setChatroomId] = useState(null);
   const activeChannel = POST_CHANNELS[activePostType];
+  const activeRoomId = postRooms[activePostType]?._id || null;
+  const loading = roomsLoading || postsLoading;
+  const roomsRequestId = useRef(0);
+  const postsRequestId = useRef(0);
 
-  // Initialize and load posts on mount
+  const initializePostRooms = useCallback(async () => {
+    const requestId = roomsRequestId.current + 1;
+    roomsRequestId.current = requestId;
+
+    try {
+      setRoomsLoading(true);
+      setError(null);
+
+      const chatroomsResponse = await getAllChatrooms();
+      if (requestId !== roomsRequestId.current) return;
+
+      const rooms = chatroomsResponse.success ? chatroomsResponse.data || [] : [];
+      const nextPostRooms = {};
+
+      for (const [type, channel] of Object.entries(POST_CHANNELS)) {
+        let room = findChannelRoom(rooms, channel);
+
+        if (!room && user?._id) {
+          const createResponse = await createChatroom(
+            channel.roomName,
+            channel.roomDescription,
+            channel.color,
+            false
+          );
+
+          if (requestId !== roomsRequestId.current) return;
+
+          if (createResponse.success) {
+            room = createResponse.data;
+          }
+        }
+
+        if (room) {
+          nextPostRooms[type] = room;
+        }
+      }
+
+      if (Object.keys(nextPostRooms).length === 0) {
+        setPosts([]);
+        setError(user ? 'Could not load this post room' : 'Please log in to view posts');
+        return;
+      }
+
+      setPostRooms(nextPostRooms);
+    } catch (err) {
+      if (requestId !== roomsRequestId.current) return;
+      console.error('Error initializing posts:', err);
+      setError('Failed to load posts. Please try again later.');
+    } finally {
+      if (requestId === roomsRequestId.current) {
+        setRoomsLoading(false);
+      }
+    }
+  }, [user]);
+
+  const loadPosts = useCallback(async (roomId) => {
+    if (!roomId) return;
+    const requestId = postsRequestId.current + 1;
+    postsRequestId.current = requestId;
+    
+    try {
+      setPostsLoading(true);
+      setError(null);
+      const response = await getPosts(roomId, 100);
+      if (requestId !== postsRequestId.current) return;
+
+      if (response.success) {
+        setPosts(response.data || []);
+      } else {
+        setError(response.message || 'Failed to load posts');
+        setPosts([]);
+      }
+    } catch (err) {
+      if (requestId !== postsRequestId.current) return;
+      console.error('Error loading posts:', err);
+      setError(err.message || 'Failed to load posts');
+      setPosts([]);
+    } finally {
+      if (requestId === postsRequestId.current) {
+        setPostsLoading(false);
+      }
+    }
+  }, []);
+
+  // Initialize rooms first, then load posts for the selected room.
   useEffect(() => {
     initializePostRooms();
-  }, [user?._id]);
+  }, [initializePostRooms]);
 
   useEffect(() => {
     const loadCurrentSurvey = async () => {
@@ -71,104 +167,30 @@ const Posts = () => {
   }, [user?._id]);
 
   useEffect(() => {
-    const activeRoomId = postRooms[activePostType]?._id;
     if (activeRoomId) {
       setChatroomId(activeRoomId);
       setExpandedPostId(null);
       loadPosts(activeRoomId);
+    } else if (!roomsLoading) {
+      setChatroomId(null);
+      setPosts([]);
     }
-  }, [activePostType, postRooms]);
+  }, [activeRoomId, loadPosts, roomsLoading]);
 
   // Track liked posts for UI
   useEffect(() => {
-    if (posts.length > 0) {
-      const liked = new Set();
-      posts.forEach(post => {
-        if (post.likes?.some(like => 
-          typeof like === 'object' ? like._id === user?._id : like === user?._id
-        )) {
-          liked.add(post._id);
-        }
-      });
-      setLikedPosts(liked);
-    }
-  }, [posts, user]);
+    const liked = new Set();
 
-  const findChannelRoom = (rooms, channel) => {
-    return rooms.find(room => {
-      const searchable = `${room.name || ''} ${room.description || ''} ${room.category || ''}`.toLowerCase();
-      return channel.keywords.some(keyword => searchable.includes(keyword));
+    posts.forEach(post => {
+      if (post.likes?.some(like =>
+        typeof like === 'object' ? like._id === user?._id : like === user?._id
+      )) {
+        liked.add(post._id);
+      }
     });
-  };
 
-  const initializePostRooms = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const chatroomsResponse = await getAllChatrooms();
-      const rooms = chatroomsResponse.success ? chatroomsResponse.data || [] : [];
-      const nextPostRooms = {};
-
-      for (const [type, channel] of Object.entries(POST_CHANNELS)) {
-        let room = findChannelRoom(rooms, channel);
-
-        if (!room && user?._id) {
-          const createResponse = await createChatroom(
-            channel.roomName,
-            channel.roomDescription,
-            channel.color,
-            false
-          );
-
-          if (createResponse.success) {
-            room = createResponse.data;
-          }
-        }
-
-        if (room) {
-          nextPostRooms[type] = room;
-        }
-      }
-
-      if (!nextPostRooms[activePostType]) {
-        setPosts([]);
-        setError(user ? 'Could not load this post room' : 'Please log in to view posts');
-        return;
-      }
-
-      setPostRooms(nextPostRooms);
-      setChatroomId(nextPostRooms[activePostType]._id);
-      await loadPosts(nextPostRooms[activePostType]._id);
-    } catch (err) {
-      console.error('Error initializing posts:', err);
-      setError('Failed to load posts. Please try again later.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadPosts = async (roomId) => {
-    if (!roomId) return;
-    
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await getPosts(roomId, 100);
-      if (response.success) {
-        setPosts(response.data || []);
-      } else {
-        setError(response.message || 'Failed to load posts');
-        setPosts([]);
-      }
-    } catch (err) {
-      console.error('Error loading posts:', err);
-      setError(err.message || 'Failed to load posts');
-      setPosts([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    setLikedPosts(liked);
+  }, [posts, user?._id]);
 
   const handleCreatePost = async (e) => {
     e.preventDefault();
