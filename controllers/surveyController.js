@@ -105,7 +105,12 @@ exports.getSpecificUserSurvey = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const survey = await Survey.findOne({ userId }).populate('userId', 'username email profilePhoto');
+    let survey = await Survey.findOne({ userId }).populate('userId', 'username email profilePhoto');
+
+    if (!survey) {
+      survey = await Survey.findById(userId).populate('userId', 'username email profilePhoto');
+    }
+
     const user = survey?.userId || await User.findById(userId).select('username email profilePhoto createdAt');
 
     if (!user) {

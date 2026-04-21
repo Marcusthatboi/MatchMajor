@@ -26,13 +26,15 @@ const getMatches = async (req, res) => {
     // Prepare users for matching algorithm
     const currentUserForMatching = currentUser.survey ? { 
       ...currentUser.toObject(),
-      ...currentUser.survey.toObject()
+      ...currentUser.survey.toObject(),
+      _id: currentUser._id
     } : currentUser.toObject();
     
     const allUsersForMatching = allUsers.map(user => 
       user.survey ? { 
         ...user.toObject(),
-        ...user.survey.toObject()
+        ...user.survey.toObject(),
+        _id: user._id
       } : user.toObject()
     );
 
@@ -41,17 +43,22 @@ const getMatches = async (req, res) => {
 
     res.json({
       success: true,
-      data: matches.map(match => ({
-        _id: match._id,
-        username: match.username,
-        name: match.name,
-        major: match.major,
-        year: match.year,
-        experience: match.experience,
-        bio: match.bio,
-        profilePhoto: match.profilePhoto,
-        compatibilityScore: match.compatibilityScore
-      }))
+      data: matches.map(match => {
+        const matchUserId = match.userId?._id || match.userId || match._id;
+
+        return {
+          _id: matchUserId,
+          userId: matchUserId,
+          username: match.username,
+          name: match.name,
+          major: match.major,
+          year: match.year,
+          experience: match.experience,
+          bio: match.bio,
+          profilePhoto: match.profilePhoto,
+          compatibilityScore: match.compatibilityScore
+        };
+      })
     });
   } catch (error) {
     res.status(500).json({ 

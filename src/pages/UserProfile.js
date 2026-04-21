@@ -68,7 +68,7 @@ const UserProfile = () => {
         </div>
         <h1>{displayName}</h1>
         <p>Student profile</p>
-        <Link to="/posts" className="profile-secondary-link profile-header-link">Back to Posts</Link>
+        <Link to="/posts" className="profile-secondary-link profile-header-link">Return</Link>
       </div>
 
       <div className="profile-content">

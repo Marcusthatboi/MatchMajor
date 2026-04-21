@@ -67,9 +67,19 @@ export const UserProvider = ({ children }) => {
   // Update user profile
   const updateProfile = (updatedData) => {
     console.log('✅ Profile updated');
+    const {
+      _id,
+      id,
+      userId,
+      createdAt,
+      updatedAt,
+      __v,
+      ...profileFields
+    } = updatedData || {};
+
     setUser((prevUser) => ({
       ...prevUser,
-      ...updatedData
+      ...profileFields
     }));
   };
 

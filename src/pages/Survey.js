@@ -11,7 +11,7 @@ const validateMainSurvey = (formData) => {
 };
 
 const Survey = () => {
-  const { formData, loading, error, initializing, handleChange, submitSurvey } = useSurveyForm('/matches');
+  const { formData, loading, error, initializing, handleChange, submitSurvey } = useSurveyForm('/profile');
 
   const handleSubmit = async (e) => {
     e.preventDefault();

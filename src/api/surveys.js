@@ -19,7 +19,7 @@ export const saveSurvey = async (surveyData) => {
  */
 export const getSurvey = async () => {
   try {
-    const response = await api.get('/survey');
+    const response = await api.get('/survey', { skipCache: true });
     return response;
   } catch (error) {
     console.error('Get survey error:', error);
@@ -32,7 +32,7 @@ export const getSurvey = async () => {
  */
 export const getUserSurvey = async (userId) => {
   try {
-    const response = await api.get(`/survey/${userId}`);
+    const response = await api.get(`/survey/${userId}`, { skipCache: true });
     return response;
   } catch (error) {
     console.error('Get user survey error:', error);

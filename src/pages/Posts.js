@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { getPosts, createPost, likePost, addComment, deletePost, requestRoommateJoin, respondToRoommateRequest } from '../api/chatroomPosts';
 import { getAllChatrooms, createChatroom } from '../api/chatrooms';
@@ -27,6 +27,11 @@ const POST_CHANNELS = {
   }
 };
 
+const getPostTypeFromSearch = (search) => {
+  const postType = new URLSearchParams(search).get('type');
+  return POST_CHANNELS[postType] ? postType : 'roommate';
+};
+
 const findChannelRoom = (rooms, channel) => {
   return rooms.find(room => {
     const searchable = `${room.name || ''} ${room.description || ''} ${room.category || ''}`.toLowerCase();
@@ -37,8 +42,9 @@ const findChannelRoom = (rooms, channel) => {
 const Posts = () => {
   const { user } = useUser();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const [activePostType, setActivePostType] = useState('roommate');
+  const [activePostType, setActivePostType] = useState(() => getPostTypeFromSearch(location.search));
   const [postRooms, setPostRooms] = useState({});
   const [posts, setPosts] = useState([]);
   const [roomsLoading, setRoomsLoading] = useState(true);
@@ -61,6 +67,10 @@ const Posts = () => {
   const loading = roomsLoading || postsLoading;
   const roomsRequestId = useRef(0);
   const postsRequestId = useRef(0);
+
+  useEffect(() => {
+    setActivePostType(getPostTypeFromSearch(location.search));
+  }, [location.search]);
 
   const initializePostRooms = useCallback(async () => {
     const requestId = roomsRequestId.current + 1;
@@ -464,11 +474,20 @@ const Posts = () => {
     return profile.studyGoals || profile.studyHabits || profile.studyStyle || profile.bio || 'Study profile details have not been added yet.';
   };
 
+  const openUserProfile = (profileUserId) => {
+    if (profileUserId) {
+      navigate(`/profile/${profileUserId}`, {
+        state: {
+          returnTo: `/posts?type=${activePostType}`,
+          returnLabel: `Back to ${activeChannel.label}`
+        }
+      });
+    }
+  };
+
   const openPosterProfile = (post) => {
     const authorId = getPostAuthorId(post);
-    if (authorId) {
-      navigate(`/profile/${authorId}`);
-    }
+    openUserProfile(authorId);
   };
 
   const handlePostCardClick = (event, post) => {
@@ -653,7 +672,7 @@ const Posts = () => {
                   <button
                     type="button"
                     className="request-user"
-                    onClick={() => navigate(`/profile/${getUserId(request.user)}`)}
+                    onClick={() => openUserProfile(getUserId(request.user))}
                   >
                     <span className="lineup-avatar small">
                       {request.user?.profilePhoto ? (
@@ -767,7 +786,7 @@ const Posts = () => {
                         type="button"
                         className="lineup-avatar"
                         title={getUserName(lineupUser)}
-                        onClick={() => navigate(`/profile/${getUserId(lineupUser)}`)}
+                        onClick={() => openUserProfile(getUserId(lineupUser))}
                       >
                         {lineupUser?.profilePhoto ? (
                           <img src={lineupUser.profilePhoto} alt="" />

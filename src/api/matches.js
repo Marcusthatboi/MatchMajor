@@ -6,7 +6,7 @@ import { api } from './index';
  */
 export const getMatches = async () => {
   try {
-    const response = await api.get('/matches');
+    const response = await api.get('/matches', { skipCache: true });
     return response;
   } catch (error) {
     console.error('Get matches error:', error);
@@ -19,7 +19,7 @@ export const getMatches = async () => {
  */
 export const getUserProfile = async (userId) => {
   try {
-    const response = await api.get(`/matches/${userId}`);
+    const response = await api.get(`/matches/${userId}`, { skipCache: true });
     return response;
   } catch (error) {
     console.error('Get user profile error:', error);

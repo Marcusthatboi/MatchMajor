@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getMatches } from '../api/matches';
 import './Matches.css';
 
 const Matches = () => {
+  const navigate = useNavigate();
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -37,6 +38,33 @@ const Matches = () => {
       .join('')
       .slice(0, 2)
       .toUpperCase();
+  };
+
+  const getMatchProfileId = (match) => match.userId || match._id;
+
+  const openProfile = (matchId) => {
+    if (matchId) {
+      navigate(`/profile/${matchId}`, {
+        state: {
+          returnTo: '/matches',
+          returnLabel: 'Back to Matches'
+        }
+      });
+    }
+  };
+
+  const handleMatchCardClick = (event, matchId) => {
+    if (event.target.closest('a, button')) {
+      return;
+    }
+
+    openProfile(matchId);
+  };
+
+  const handleMatchCardKeyDown = (event, matchId) => {
+    if (event.key === 'Enter') {
+      openProfile(matchId);
+    }
   };
 
   if (loading) {
@@ -75,7 +103,14 @@ const Matches = () => {
       </div>
       <div className="matches-grid">
         {matches.map((match) => (
-          <div key={match._id} className="match-card">
+          <div
+            key={match._id}
+            className="match-card"
+            role="link"
+            tabIndex={0}
+            onClick={(event) => handleMatchCardClick(event, getMatchProfileId(match))}
+            onKeyDown={(event) => handleMatchCardKeyDown(event, getMatchProfileId(match))}
+          >
             <div className="match-avatar-container">
               {match.profilePhoto ? (
                 <img src={match.profilePhoto} alt={`${match.username} avatar`} className="match-avatar" />
