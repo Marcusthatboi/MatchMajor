@@ -1,5 +1,5 @@
 .posts-page {
-  max-width: 800px;
+  max-width: 1320px;
   margin: 0 auto;
   padding: 36px 24px 72px;
 }
@@ -148,6 +148,119 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+.posts-body {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 44px;
+  align-items: start;
+}
+
+.posts-feed {
+  min-width: 0;
+}
+
+.requests-sidebar {
+  position: sticky;
+  top: 92px;
+  padding: 18px;
+  min-height: 520px;
+  border: 1px solid #e5e0d8;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.requests-sidebar h2 {
+  margin: 0 0 14px;
+  color: var(--brown);
+  font-size: 1.1rem;
+}
+
+.requests-empty {
+  margin: 0;
+  color: #777;
+  line-height: 1.45;
+}
+
+.request-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid #eee;
+}
+
+.request-card:first-of-type {
+  border-top: none;
+}
+
+.request-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.request-user strong,
+.request-user small {
+  display: block;
+}
+
+.request-user small {
+  color: #777;
+  font-size: 0.78rem;
+  line-height: 1.3;
+}
+
+.request-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.request-actions button {
+  flex: 1;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 10px;
+  background: var(--primary-cyan);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.request-actions button.deny {
+  background: #777;
+}
+
+.post-modal-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.post-modal-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--brown);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.post-modal-fields input {
+  min-height: 40px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font: inherit;
 }
 
 /* Post Card Styles */
@@ -304,10 +417,15 @@
 
 .delete-btn {
   padding: 4px 8px;
-  font-size: 20px;
+  font-size: 0 !important;
   cursor: pointer;
   opacity: 0;
   transition: opacity 0.2s;
+}
+
+.delete-btn::before {
+  content: '🗑';
+  font-size: 20px;
 }
 
 .post-card:hover .delete-btn {
@@ -331,6 +449,7 @@
 
 .post-footer {
   display: flex;
+  flex-wrap: wrap;
   gap: 24px;
   padding-top: 12px;
   border-top: 1px solid #f0f0f0;
@@ -349,6 +468,102 @@
 .post-action.liked {
   color: var(--primary-cyan);
   font-weight: 600;
+}
+
+.roommate-post-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.roommate-post-meta span {
+  padding: 10px;
+  border: 1px solid #ece7df;
+  border-radius: 8px;
+  background: #fcfbf8;
+  color: #4d463f;
+  font-size: 0.88rem;
+}
+
+.roommate-post-meta strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #7a6a58;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.roommate-lineup {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 16px;
+  padding: 12px;
+  border: 1px solid #ece7df;
+  border-radius: 8px;
+  background: #fbfaf7;
+}
+
+.lineup-avatars {
+  display: flex;
+  align-items: center;
+}
+
+.lineup-avatar {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  margin-right: -8px;
+  overflow: hidden;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: var(--brown);
+  color: white;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.lineup-avatar.small {
+  width: 34px;
+  height: 34px;
+  margin-right: 0;
+  cursor: inherit;
+}
+
+.lineup-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.lineup-avatar.placeholder {
+  background: #f1f1f1;
+  color: #777;
+  border-color: white;
+  cursor: default;
+}
+
+.lineup-count {
+  color: #666;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.request-join-btn {
+  padding: 6px 10px;
+  border-radius: 6px !important;
+  background: var(--primary-cyan) !important;
+  color: white !important;
+  font-weight: 700;
+}
+
+.request-join-btn:disabled {
+  background: #ddd !important;
+  color: #777 !important;
+  cursor: default !important;
 }
 
 /* Comments Section */
@@ -626,6 +841,14 @@
 }
 
 @media (max-width: 900px) {
+  .posts-body {
+    grid-template-columns: 1fr;
+  }
+
+  .requests-sidebar {
+    position: static;
+  }
+
   .study-grid,
   .roommate-grid {
     grid-template-columns: minmax(260px, 420px);
@@ -649,6 +872,16 @@
   .posts-slider-option {
     padding: 11px 10px;
     font-size: 0.92rem;
+  }
+
+  .post-modal-fields,
+  .roommate-post-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .roommate-lineup {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .poster-panel {

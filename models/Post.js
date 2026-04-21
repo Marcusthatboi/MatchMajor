@@ -26,6 +26,65 @@ const postSchema = new mongoose.Schema({
     maxlength: [5000, 'Post cannot exceed 5000 characters'],
     trim: true
   },
+
+  roommateSlots: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 10
+  },
+
+  expiresAt: {
+    type: Date,
+    default: null
+  },
+
+  meetingTime: {
+    type: String,
+    trim: true,
+    maxlength: [120, 'Meeting time cannot exceed 120 characters'],
+    default: ''
+  },
+
+  meetingPlace: {
+    type: String,
+    trim: true,
+    maxlength: [200, 'Meeting place cannot exceed 200 characters'],
+    default: ''
+  },
+
+  roommateMembers: [{
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    approvedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+
+  roommateRequests: [{
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    status: {
+      type: String,
+      enum: ['pending', 'approved', 'denied'],
+      default: 'pending'
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    },
+    respondedAt: {
+      type: Date,
+      default: null
+    }
+  }],
   
   // Like tracking
   likes: [{
@@ -191,6 +250,12 @@ postSchema.methods.getDetails = function() {
     author: this.author,
     authorName: this.authorName,
     content: this.content,
+    roommateSlots: this.roommateSlots,
+    expiresAt: this.expiresAt,
+    meetingTime: this.meetingTime,
+    meetingPlace: this.meetingPlace,
+    roommateMembers: this.roommateMembers,
+    roommateRequests: this.roommateRequests,
     likeCount: this.likeCount,
     commentCount: this.commentCount,
     isEdited: this.isEdited,

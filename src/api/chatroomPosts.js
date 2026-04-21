@@ -24,16 +24,39 @@ export const getPosts = async (chatroomId, limit = 50) => {
 /**
  * Create a new post
  */
-export const createPost = async (chatroomId, content) => {
+export const createPost = async (chatroomId, content, options = {}) => {
   try {
     console.log('Creating post in chatroom:', chatroomId);
     const response = await api.post(API_URL, {
       chatroomId,
-      content
+      content,
+      ...options
     });
     return response;
   } catch (error) {
     console.error('Create post error:', error);
+    throw error;
+  }
+};
+
+export const requestRoommateJoin = async (postId) => {
+  try {
+    const response = await api.post(`${API_URL}/${postId}/roommate-request`);
+    return response;
+  } catch (error) {
+    console.error('Request roommate join error:', error);
+    throw error;
+  }
+};
+
+export const respondToRoommateRequest = async (postId, requestId, decision) => {
+  try {
+    const response = await api.put(`${API_URL}/${postId}/roommate-request/${requestId}`, {
+      decision
+    });
+    return response;
+  } catch (error) {
+    console.error('Respond roommate request error:', error);
     throw error;
   }
 };

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
-import { getPosts, createPost, likePost, addComment, deletePost } from '../api/chatroomPosts';
+import { getPosts, createPost, likePost, addComment, deletePost, requestRoommateJoin, respondToRoommateRequest } from '../api/chatroomPosts';
 import { getAllChatrooms, createChatroom } from '../api/chatrooms';
+import { getSurvey } from '../api/surveys';
 import './Posts.css';
 
 const POST_CHANNELS = {
@@ -37,6 +38,11 @@ const Posts = () => {
   const [error, setError] = useState(null);
   const [showPostModal, setShowPostModal] = useState(false);
   const [newPostContent, setNewPostContent] = useState('');
+  const [roommateSlots, setRoommateSlots] = useState(1);
+  const [expiresAt, setExpiresAt] = useState('');
+  const [meetingTime, setMeetingTime] = useState('');
+  const [meetingPlace, setMeetingPlace] = useState('');
+  const [currentSurvey, setCurrentSurvey] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [expandedPostId, setExpandedPostId] = useState(null);
   const [commentText, setCommentText] = useState({});
@@ -47,6 +53,21 @@ const Posts = () => {
   // Initialize and load posts on mount
   useEffect(() => {
     initializePostRooms();
+  }, [user?._id]);
+
+  useEffect(() => {
+    const loadCurrentSurvey = async () => {
+      if (!user?._id) return;
+
+      try {
+        const response = await getSurvey();
+        setCurrentSurvey(response?.survey || response?.data || null);
+      } catch (err) {
+        setCurrentSurvey(null);
+      }
+    };
+
+    loadCurrentSurvey();
   }, [user?._id]);
 
   useEffect(() => {
@@ -155,10 +176,19 @@ const Posts = () => {
 
     try {
       setSubmitting(true);
-      const response = await createPost(chatroomId, newPostContent.trim());
+      const response = await createPost(chatroomId, newPostContent.trim(), {
+        roommateSlots,
+        expiresAt: activePostType === 'roommate' ? expiresAt || null : null,
+        meetingTime: activePostType === 'study' ? meetingTime : '',
+        meetingPlace: activePostType === 'study' ? meetingPlace : ''
+      });
       if (response.success) {
         setPosts(currentPosts => [response.data, ...currentPosts]);
         setNewPostContent('');
+        setRoommateSlots(1);
+        setExpiresAt('');
+        setMeetingTime('');
+        setMeetingPlace('');
         setShowPostModal(false);
       } else {
         setError(response.message || 'Failed to create post');
@@ -233,7 +263,38 @@ const Posts = () => {
   };
 
   const isPostOwner = (postAuthorId) => {
-    return user?._id === postAuthorId;
+    const authorId = typeof postAuthorId === 'object' ? postAuthorId?._id : postAuthorId;
+    return user?._id === authorId;
+  };
+
+  const updatePost = (updatedPost) => {
+    setPosts(currentPosts => currentPosts.map(post => (
+      post._id === updatedPost._id ? updatedPost : post
+    )));
+  };
+
+  const handleRequestJoin = async (postId) => {
+    try {
+      const response = await requestRoommateJoin(postId);
+      if (response.success) {
+        updatePost(response.data);
+      }
+    } catch (err) {
+      console.error('Error requesting roommate join:', err);
+      setError(err.message || 'Failed to request to join');
+    }
+  };
+
+  const handleRespondToRequest = async (postId, requestId, decision) => {
+    try {
+      const response = await respondToRoommateRequest(postId, requestId, decision);
+      if (response.success) {
+        updatePost(response.data);
+      }
+    } catch (err) {
+      console.error('Error responding to roommate request:', err);
+      setError(err.message || 'Failed to respond to request');
+    }
   };
 
   const getAuthorProfile = (post) => {
@@ -251,6 +312,101 @@ const Posts = () => {
 
   const getAuthorInitial = (post) => {
     return getAuthorName(post).charAt(0).toUpperCase();
+  };
+
+  const getUserName = (profileUser) => {
+    return profileUser?.survey?.name || profileUser?.username || 'Student';
+  };
+
+  const getUserInitial = (profileUser) => {
+    return getUserName(profileUser).charAt(0).toUpperCase();
+  };
+
+  const getUserId = (profileUser) => {
+    return typeof profileUser === 'object' ? profileUser?._id : profileUser;
+  };
+
+  const getOpenSlotCount = (post) => {
+    return Math.max(0, (post.roommateSlots || 0) - (post.roommateMembers?.length || 0));
+  };
+
+  const isExpired = (post) => {
+    return post.expiresAt ? new Date(post.expiresAt) < new Date() : false;
+  };
+
+  const formatExpiration = (date) => {
+    if (!date) return 'No expiration';
+    return new Date(date).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  const getCurrentRequest = (post) => {
+    return post.roommateRequests?.find(request => getUserId(request.user) === user?._id);
+  };
+
+  const canRequestJoin = (post) => {
+    return user?._id &&
+      !isPostOwner(post.author) &&
+      !isExpired(post) &&
+      getOpenSlotCount(post) > 0 &&
+      !post.roommateMembers?.some(member => getUserId(member.user) === user._id) &&
+      getCurrentRequest(post)?.status !== 'pending' &&
+      getCurrentRequest(post)?.status !== 'approved';
+  };
+
+  const getMatchScore = (post) => {
+    const profile = getAuthorProfile(post);
+    if (!currentSurvey || !profile) return null;
+
+    const comparisons = activePostType === 'roommate'
+      ? ['campusSelection', 'sleepSchedule', 'cleanliness', 'socialBattery']
+      : ['major', 'year', 'studyLocation', 'studyTimes', 'virtualOrInPerson', 'studyStyle'];
+
+    let available = 0;
+    let matches = 0;
+
+    comparisons.forEach(field => {
+      if (currentSurvey[field] && profile[field]) {
+        available += 1;
+        if (String(currentSurvey[field]).toLowerCase() === String(profile[field]).toLowerCase()) {
+          matches += 1;
+        }
+      }
+    });
+
+    return available ? Math.round((matches / available) * 100) : null;
+  };
+
+  const getLineupUsers = (post) => {
+    return [
+      post.author,
+      ...(post.roommateMembers || []).map(member => member.user)
+    ].filter(Boolean);
+  };
+
+  const getPendingRequests = () => {
+    return posts.flatMap(post => {
+      if (!isPostOwner(post.author)) return [];
+      return (post.roommateRequests || [])
+        .filter(request => request.status === 'pending')
+        .map(request => ({ post, request }));
+    });
+  };
+
+  const getSpotLabel = () => {
+    return activePostType === 'roommate' ? 'roommate spot' : 'study group spot';
+  };
+
+  const getJoinButtonLabel = (post) => {
+    const requestStatus = getCurrentRequest(post)?.status;
+    if (requestStatus === 'pending') return 'Request Pending';
+    if (requestStatus === 'approved') return 'Approved';
+    if (isExpired(post)) return 'Expired';
+    if (getOpenSlotCount(post) === 0) return 'Full';
+    return activePostType === 'roommate' ? 'Request to Join' : 'Request to Join Group';
   };
 
   const getPosterDetails = (post) => {
@@ -306,6 +462,8 @@ const Posts = () => {
       openPosterProfile(post);
     }
   };
+
+  const pendingRequests = getPendingRequests();
 
   return (
     <div className="posts-page">
@@ -384,6 +542,50 @@ const Posts = () => {
                   marginBottom: '12px'
                 }}
               />
+              <div className="post-modal-fields">
+                <label>
+                  {activePostType === 'roommate' ? 'Roommates needed' : 'Group spots open'}
+                  <input
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={roommateSlots}
+                    onChange={(e) => setRoommateSlots(Number(e.target.value))}
+                  />
+                </label>
+                {activePostType === 'roommate' ? (
+                  <label>
+                    Post expiration
+                    <input
+                      type="date"
+                      value={expiresAt}
+                      min={new Date().toISOString().slice(0, 10)}
+                      onChange={(e) => setExpiresAt(e.target.value)}
+                    />
+                  </label>
+                ) : (
+                  <>
+                    <label>
+                      Time
+                      <input
+                        type="text"
+                        value={meetingTime}
+                        placeholder="e.g. Tuesdays at 6 PM"
+                        onChange={(e) => setMeetingTime(e.target.value)}
+                      />
+                    </label>
+                    <label>
+                      Place
+                      <input
+                        type="text"
+                        value={meetingPlace}
+                        placeholder="e.g. Library room 204"
+                        onChange={(e) => setMeetingPlace(e.target.value)}
+                      />
+                    </label>
+                  </>
+                )}
+              </div>
               <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
                 <button 
                   type="button"
@@ -418,16 +620,51 @@ const Posts = () => {
         </div>
       )}
 
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: '40px 20px', color: '#999' }}>
-          <p>Loading posts...</p>
-        </div>
-      ) : posts.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '40px 20px', color: '#999' }}>
-          <p>No {activeChannel.label.toLowerCase()} yet. {user ? 'Be the first to post!' : 'Log in to create a post!'}</p>
-        </div>
-      ) : (
-        <div className="posts-container">
+      <div className="posts-body">
+        <aside className="requests-sidebar">
+            <h2>Requests</h2>
+            {pendingRequests.length === 0 ? (
+              <p className="requests-empty">No requests yet. Have you made a post?</p>
+            ) : (
+              pendingRequests.map(({ post, request }) => (
+                <div key={request._id} className="request-card">
+                  <button
+                    type="button"
+                    className="request-user"
+                    onClick={() => navigate(`/profile/${getUserId(request.user)}`)}
+                  >
+                    <span className="lineup-avatar small">
+                      {request.user?.profilePhoto ? (
+                        <img src={request.user.profilePhoto} alt="" />
+                      ) : (
+                        getUserInitial(request.user)
+                      )}
+                    </span>
+                    <span>
+                      <strong>{getUserName(request.user)}</strong>
+                      <small>{post.content.slice(0, 48)}{post.content.length > 48 ? '...' : ''}</small>
+                    </span>
+                  </button>
+                  <div className="request-actions">
+                    <button type="button" onClick={() => handleRespondToRequest(post._id, request._id, 'approved')}>Approve</button>
+                    <button type="button" className="deny" onClick={() => handleRespondToRequest(post._id, request._id, 'denied')}>Deny</button>
+                  </div>
+                </div>
+              ))
+            )}
+        </aside>
+
+        <section className="posts-feed">
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '40px 20px', color: '#999' }}>
+              <p>Loading posts...</p>
+            </div>
+          ) : posts.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px 20px', color: '#999' }}>
+              <p>No {activeChannel.label.toLowerCase()} yet. {user ? 'Be the first to post!' : 'Log in to create a post!'}</p>
+            </div>
+          ) : (
+            <div className="posts-container">
           {posts.map((post) => (
             <div
               key={post._id}
@@ -481,8 +718,51 @@ const Posts = () => {
                 )}
               </div>
 
+              <div className="roommate-post-meta">
+                {activePostType === 'roommate' ? (
+                  <>
+                    <span><strong>Campus</strong>{getAuthorProfile(post).campusSelection || 'Not specified'}</span>
+                    <span><strong>Expires</strong>{formatExpiration(post.expiresAt)}</span>
+                  </>
+                ) : (
+                  <>
+                    <span><strong>Time</strong>{post.meetingTime || 'Not specified'}</span>
+                    <span><strong>Place</strong>{post.meetingPlace || 'Not specified'}</span>
+                  </>
+                )}
+                <span><strong>Match</strong>{getMatchScore(post) === null ? 'Not enough info' : `${getMatchScore(post)}%`}</span>
+              </div>
+
               <div className="post-content">
                 <p>{post.content}</p>
+              </div>
+
+              <div className="roommate-lineup">
+                  <div className="lineup-avatars">
+                    {getLineupUsers(post).map((lineupUser, index) => (
+                      <button
+                        key={getUserId(lineupUser) || index}
+                        type="button"
+                        className="lineup-avatar"
+                        title={getUserName(lineupUser)}
+                        onClick={() => navigate(`/profile/${getUserId(lineupUser)}`)}
+                      >
+                        {lineupUser?.profilePhoto ? (
+                          <img src={lineupUser.profilePhoto} alt="" />
+                        ) : (
+                          getUserInitial(lineupUser)
+                        )}
+                      </button>
+                    ))}
+                    {Array.from({ length: getOpenSlotCount(post) }).map((_, index) => (
+                      <span key={`empty-${post._id}-${index}`} className="lineup-avatar placeholder" title="Open roommate spot">
+                        +
+                      </span>
+                    ))}
+                  </div>
+                  <span className="lineup-count">
+                    {post.roommateMembers?.length || 0} of {post.roommateSlots || 0} {getSpotLabel()}{(post.roommateSlots || 0) === 1 ? '' : 's'} filled
+                  </span>
               </div>
 
               <div className="post-footer">
@@ -512,6 +792,16 @@ const Posts = () => {
                 >
                   💬 {post.comments?.length || 0} Comment{(post.comments?.length || 0) !== 1 ? 's' : ''}
                 </button>
+                {!isPostOwner(post.author) && (
+                  <button
+                    className="post-action request-join-btn"
+                    type="button"
+                    disabled={!canRequestJoin(post)}
+                    onClick={() => handleRequestJoin(post._id)}
+                  >
+                    {getJoinButtonLabel(post)}
+                  </button>
+                )}
               </div>
 
               {expandedPostId === post._id && (
@@ -572,8 +862,10 @@ const Posts = () => {
               )}
             </div>
           ))}
-        </div>
-      )}
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 };

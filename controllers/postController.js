@@ -38,6 +38,27 @@ const commentAuthorPopulate = {
   select: 'username email profilePhoto'
 };
 
+const roommateUserPopulate = [
+  {
+    path: 'roommateMembers.user',
+    select: 'username email profilePhoto survey',
+    populate: authorPopulate.populate
+  },
+  {
+    path: 'roommateRequests.user',
+    select: 'username email profilePhoto survey',
+    populate: authorPopulate.populate
+  }
+];
+
+const populatePostDetails = async (post) => {
+  await post.populate(authorPopulate);
+  await post.populate('likes', 'username');
+  await post.populate(commentAuthorPopulate);
+  await post.populate(roommateUserPopulate);
+  return post;
+};
+
 const sendPostError = (res, error, fallbackMessage = 'Server error') => {
   console.error('Post controller error:', error.message, error.stack);
 
@@ -79,6 +100,7 @@ exports.getPosts = async (req, res) => {
       .populate(authorPopulate)
       .populate('likes', 'username')
       .populate(commentAuthorPopulate)
+      .populate(roommateUserPopulate)
       .sort('-createdAt')
       .limit(parseInt(limit));
 
@@ -101,7 +123,7 @@ exports.createPost = async (req, res) => {
   };
 
   try {
-    const { chatroomId, content } = req.body;
+    const { chatroomId, content, roommateSlots = 0, expiresAt = null, meetingTime = '', meetingPlace = '' } = req.body;
 
     if (!req.user?._id) {
       return res.status(401).json({
@@ -121,6 +143,22 @@ exports.createPost = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Post content cannot be empty'
+      });
+    }
+
+    const normalizedSlots = Number(roommateSlots) || 0;
+    if (normalizedSlots < 0 || normalizedSlots > 10) {
+      return res.status(400).json({
+        success: false,
+        message: 'Number of roommates must be between 0 and 10'
+      });
+    }
+
+    const normalizedExpiresAt = expiresAt ? new Date(expiresAt) : null;
+    if (normalizedExpiresAt && Number.isNaN(normalizedExpiresAt.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid expiration date'
       });
     }
 
@@ -158,13 +196,19 @@ exports.createPost = async (req, res) => {
       author: req.user._id,
       authorName: user.username || 'Anonymous',
       content: content.trim(),
+      roommateSlots: normalizedSlots,
+      expiresAt: normalizedExpiresAt,
+      meetingTime: meetingTime.trim(),
+      meetingPlace: meetingPlace.trim(),
       likes: [],
       likeCount: 0,
+      roommateMembers: [],
+      roommateRequests: [],
       comments: []
     });
 
     context.stage = 'populate_author';
-    await post.populate(authorPopulate);
+    await populatePostDetails(post);
 
     res.status(201).json({
       success: true,
@@ -210,8 +254,7 @@ exports.likePost = async (req, res) => {
     post.likeCount = post.likes.length;
     await post.save();
 
-    await post.populate(authorPopulate);
-    await post.populate('likes', 'username');
+    await populatePostDetails(post);
 
     res.status(200).json({
       success: true,
@@ -258,8 +301,160 @@ exports.addComment = async (req, res) => {
     });
 
     await post.save();
-    await post.populate(authorPopulate);
-    await post.populate(commentAuthorPopulate);
+    await populatePostDetails(post);
+
+    res.status(200).json({
+      success: true,
+      data: post
+    });
+  } catch (error) {
+    sendPostError(res, error);
+  }
+};
+
+exports.requestRoommateJoin = async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid post ID'
+      });
+    }
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({
+        success: false,
+        message: 'Post not found'
+      });
+    }
+
+    if (idsMatch(post.author, req.user._id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'You cannot request to join your own post'
+      });
+    }
+
+    if (post.expiresAt && post.expiresAt < new Date()) {
+      return res.status(400).json({
+        success: false,
+        message: 'This post has expired'
+      });
+    }
+
+    if (post.roommateMembers.some(member => idsMatch(member.user, req.user._id))) {
+      return res.status(400).json({
+        success: false,
+        message: 'You are already in this lineup'
+      });
+    }
+
+    const openSlots = Math.max(0, post.roommateSlots - post.roommateMembers.length);
+    if (openSlots <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'This lineup is full'
+      });
+    }
+
+    const existingRequest = post.roommateRequests.find(request => idsMatch(request.user, req.user._id));
+    if (existingRequest) {
+      if (existingRequest.status === 'pending') {
+        return res.status(400).json({
+          success: false,
+          message: 'You already requested to join this post'
+        });
+      }
+
+      existingRequest.status = 'pending';
+      existingRequest.createdAt = new Date();
+      existingRequest.respondedAt = null;
+    } else {
+      post.roommateRequests.push({
+        user: req.user._id,
+        status: 'pending'
+      });
+    }
+
+    await post.save();
+    await populatePostDetails(post);
+
+    res.status(200).json({
+      success: true,
+      data: post
+    });
+  } catch (error) {
+    sendPostError(res, error);
+  }
+};
+
+exports.respondToRoommateRequest = async (req, res) => {
+  try {
+    const { postId, requestId } = req.params;
+    const { decision } = req.body;
+
+    if (!['approved', 'denied'].includes(decision)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Decision must be approved or denied'
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(postId) || !mongoose.Types.ObjectId.isValid(requestId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid request ID'
+      });
+    }
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({
+        success: false,
+        message: 'Post not found'
+      });
+    }
+
+    if (!idsMatch(post.author, req.user._id) && req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only the poster can approve or deny requests'
+      });
+    }
+
+    const request = post.roommateRequests.id(requestId);
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: 'Request not found'
+      });
+    }
+
+    if (decision === 'approved') {
+      const openSlots = Math.max(0, post.roommateSlots - post.roommateMembers.length);
+      if (openSlots <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'This lineup is full'
+        });
+      }
+
+      if (!post.roommateMembers.some(member => idsMatch(member.user, request.user))) {
+        post.roommateMembers.push({
+          user: request.user,
+          approvedAt: new Date()
+        });
+      }
+    }
+
+    request.status = decision;
+    request.respondedAt = new Date();
+
+    await post.save();
+    await populatePostDetails(post);
 
     res.status(200).json({
       success: true,
