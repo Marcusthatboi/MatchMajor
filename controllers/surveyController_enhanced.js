@@ -25,7 +25,7 @@ const VALID_YEARS = [1, 2, 3, 4];
  * POST/PUT /api/surveys
  */
 exports.createOrUpdateSurvey = asyncHandler(async (req, res) => {
-  const { major, year, interests, bio, studyPreferences } = req.body;
+  const { major, year, bio, studyPreferences } = req.body;
 
   if (!req.user) {
     const error = ERROR_CODES.NO_TOKEN;
@@ -41,20 +41,6 @@ exports.createOrUpdateSurvey = asyncHandler(async (req, res) => {
 
   // === VALIDATE YEAR ===
   validateEnum(year, VALID_YEARS, 'Year');
-
-  // === VALIDATE INTERESTS ===
-  if (interests !== undefined) {
-    if (!Array.isArray(interests)) {
-      throw new AppError('Interests must be an array', 400, 'INVALID_INTERESTS');
-    }
-    if (interests.length > 20) {
-      throw new AppError('Maximum 20 interests allowed', 400, 'TOO_MANY_INTERESTS');
-    }
-    // Validate each interest
-    interests.forEach((interest, index) => {
-      validateStringLength(interest, 2, 50, `Interest ${index + 1}`);
-    });
-  }
 
   // === VALIDATE BIO ===
   if (bio !== undefined) {
@@ -72,7 +58,6 @@ exports.createOrUpdateSurvey = asyncHandler(async (req, res) => {
     // === UPDATE EXISTING ===
     existingSurvey.major = major;
     existingSurvey.year = year;
-    if (interests !== undefined) existingSurvey.interests = interests;
     if (bio !== undefined) existingSurvey.bio = bio;
     if (studyPreferences !== undefined) existingSurvey.studyPreferences = studyPreferences;
 
@@ -89,7 +74,6 @@ exports.createOrUpdateSurvey = asyncHandler(async (req, res) => {
       author: req.user._id,
       major,
       year,
-      interests: interests || [],
       bio: bio || '',
       studyPreferences: studyPreferences || {}
     });

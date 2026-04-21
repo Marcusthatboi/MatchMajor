@@ -75,7 +75,7 @@ const SurveyStudy = () => {
               <option value="">Select preference</option>
               <option value="Virtual">Virtual</option>
               <option value="In-Person">In-Person</option>
-              <option value="Hybrid">Hybrid</option>
+              <option value="Both">Hybrid</option>
             </select>
           </div>
 

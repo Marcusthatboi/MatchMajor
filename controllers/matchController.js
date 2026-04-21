@@ -44,10 +44,11 @@ const getMatches = async (req, res) => {
       data: matches.map(match => ({
         _id: match._id,
         username: match.username,
+        name: match.name,
         major: match.major,
         year: match.year,
-        interests: match.interests,
         experience: match.experience,
+        bio: match.bio,
         profilePhoto: match.profilePhoto,
         compatibilityScore: match.compatibilityScore
       }))

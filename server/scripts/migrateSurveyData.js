@@ -33,7 +33,7 @@ async function migrateSurveyData() {
     // For each user, create a survey if they have survey data
     for (const user of users) {
       const surveyFields = [
-        'major', 'year', 'interests', 'experience', 'goals', 'sleepSchedule',
+        'major', 'year', 'experience', 'goals', 'sleepSchedule',
         'cleanliness', 'visitorPolicy', 'items', 'pets', 'allergies',
         'campusSelection', 'socialBattery', 'hobbies', 'currentClasses',
         'studyGoals', 'honors', 'studyLocation', 'studyTimes', 'idealGroupSize',

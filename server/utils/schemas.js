@@ -215,12 +215,6 @@ const createSurveySchema = Joi.object({
     .valid('freshman', 'sophomore', 'junior', 'senior', 'graduate')
     .required(),
   
-  interests: Joi.array()
-    .items(Joi.string())
-    .messages({
-      'array.base': 'Interests must be an array'
-    }),
-  
   experience: Joi.string(),
   goals: Joi.string(),
   sleepSchedule: Joi.string(),

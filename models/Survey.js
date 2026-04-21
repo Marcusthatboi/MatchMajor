@@ -10,6 +10,13 @@ const surveySchema = new mongoose.Schema({
   },
   
   // === ACADEMIC INFORMATION ===
+  name: {
+    type: String,
+    trim: true,
+    maxlength: [100, 'Name cannot exceed 100 characters'],
+    default: null
+  },
+
   major: {
     type: String,
     minlength: [2, 'Major must be at least 2 characters'],
@@ -25,12 +32,21 @@ const surveySchema = new mongoose.Schema({
     },
     default: null
   },
-  
-  interests: [{
+
+  gender: {
     type: String,
-    minlength: [2, 'Interest must be at least 2 characters'],
-    maxlength: [50, 'Interest cannot exceed 50 characters']
-  }],
+    enum: {
+      values: ['Male', 'Female', 'Other'],
+      message: 'Invalid gender'
+    },
+    default: null
+  },
+
+  bio: {
+    type: String,
+    maxlength: [500, 'Bio cannot exceed 500 characters'],
+    default: null
+  },
   
   experience: {
     type: String,
@@ -188,11 +204,9 @@ const surveySchema = new mongoose.Schema({
 // userId index is created automatically via unique: true constraint
 surveySchema.index({ major: 1 });
 surveySchema.index({ year: 1 });
-surveySchema.index({ interests: 1 });
 surveySchema.index({ experience: 1 });
 surveySchema.index({ updatedAt: -1 });
 surveySchema.index({ major: 1, year: 1 }); // Compound index for common queries
-surveySchema.index({ interests: 1, experience: 1 }); // Compound index for matching
 
 /**
  * Virtual: Is complete
@@ -204,9 +218,9 @@ surveySchema.virtual('isComplete').get(function() {
 /**
  * Pre-save middleware: Calculate completion percentage
  */
-surveySchema.pre('save', async function(next) {
+surveySchema.pre('save', function() {
   const fields = [
-    'major', 'year', 'interests', 'experience', 'goals',
+    'name', 'major', 'year', 'gender', 'bio',
     'sleepSchedule', 'cleanliness', 'studyStyle', 'studyLocation',
     'virtualOrInPerson'
   ];
@@ -222,8 +236,6 @@ surveySchema.pre('save', async function(next) {
   
   this.completionPercentage = Math.round((completedFields / fields.length) * 100);
   this.lastUpdated = new Date();
-  
-  next();
 });
 
 /**
@@ -232,9 +244,11 @@ surveySchema.pre('save', async function(next) {
 surveySchema.methods.getProfile = function() {
   return {
     userId: this.userId,
+    name: this.name,
     major: this.major,
     year: this.year,
-    interests: this.interests,
+    gender: this.gender,
+    bio: this.bio,
     experience: this.experience,
     sleepSchedule: this.sleepSchedule,
     studyStyle: this.studyStyle,
@@ -272,16 +286,6 @@ surveySchema.methods.getCompatibilityScore = function(otherSurvey) {
       const diff = Math.abs(years.indexOf(this.year) - years.indexOf(otherSurvey.year));
       if (diff <= 1) score += 10;
     }
-  }
-  
-  // Shared interests (0-30 points)
-  if (this.interests && otherSurvey.interests && this.interests.length > 0 && otherSurvey.interests.length > 0) {
-    maxScore += 30;
-    const sharedInterests = this.interests.filter(i => 
-      otherSurvey.interests.some(j => j.toLowerCase() === i.toLowerCase())
-    );
-    const similarity = sharedInterests.length / Math.max(this.interests.length, otherSurvey.interests.length);
-    score += similarity * 30;
   }
   
   // Experience level (0-10 points)

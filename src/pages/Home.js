@@ -11,32 +11,43 @@ const Home = () => {
   const [posts, setPosts] = useState([]);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [sectionErrors, setSectionErrors] = useState({});
 
   useEffect(() => {
     const fetchAllData = async () => {
-      try {
-        setLoading(true);
-        
-        // Fetch matches
-        const matchesResponse = await getMatches();
-        setMatches(matchesResponse.data || []);
-        
-        // Fetch posts
-        const postsResponse = await getPosts(2);
-        setPosts(postsResponse.data || []);
-        
-        // Fetch messages
-        const messagesResponse = await getMessages(3);
-        setMessages(messagesResponse.data || []);
-        
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching home data:', err);
-        setError('Could not load some data');
-      } finally {
-        setLoading(false);
+      setLoading(true);
+
+      const [matchesResult, postsResult, messagesResult] = await Promise.allSettled([
+        getMatches(),
+        getPosts(2),
+        getMessages(3)
+      ]);
+
+      const nextErrors = {};
+
+      if (matchesResult.status === 'fulfilled') {
+        setMatches(matchesResult.value.data || []);
+      } else {
+        console.error('Error fetching home matches:', matchesResult.reason);
+        nextErrors.matches = 'Could not load matches';
       }
+
+      if (postsResult.status === 'fulfilled') {
+        setPosts(postsResult.value.data || []);
+      } else {
+        console.error('Error fetching home posts:', postsResult.reason);
+        nextErrors.posts = 'Could not load posts';
+      }
+
+      if (messagesResult.status === 'fulfilled') {
+        setMessages(messagesResult.value.data || []);
+      } else {
+        console.error('Error fetching home messages:', messagesResult.reason);
+        nextErrors.messages = 'Could not load messages';
+      }
+
+      setSectionErrors(nextErrors);
+      setLoading(false);
     };
 
     fetchAllData();
@@ -60,13 +71,13 @@ const Home = () => {
             <div className="matches-preview">
               {loading ? (
                 <p style={{ color: '#999' }}>Loading matches...</p>
-              ) : error ? (
-                <p style={{ color: '#d32f2f' }}>{error}</p>
+              ) : sectionErrors.matches ? (
+                <p style={{ color: '#d32f2f' }}>{sectionErrors.matches}</p>
               ) : matches.length > 0 ? (
                 matches.slice(0, 2).map((match) => (
                   <div key={match._id} className="match-preview">
-                    <h4>{match.username}</h4>
-                    <p>{match.interests?.slice(0, 2).join(', ') || 'No interests'}</p>
+                    <h4>{match.name || match.username}</h4>
+                    <p>{match.major || 'Major not specified'}</p>
                     <span className="compatibility">{Math.round(match.compatibilityScore || 0)}% match</span>
                   </div>
                 ))
@@ -83,6 +94,8 @@ const Home = () => {
             <div className="posts-preview">
               {loading ? (
                 <p style={{ color: '#999' }}>Loading posts...</p>
+              ) : sectionErrors.posts ? (
+                <p style={{ color: '#d32f2f' }}>{sectionErrors.posts}</p>
               ) : posts.length > 0 ? (
                 posts.slice(0, 2).map((post) => (
                   <div key={post._id} className="post-preview">
@@ -104,6 +117,8 @@ const Home = () => {
             <div className="chat-preview">
               {loading ? (
                 <p style={{ color: '#999', fontSize: '0.9rem' }}>Loading messages...</p>
+              ) : sectionErrors.messages ? (
+                <p style={{ color: '#d32f2f', fontSize: '0.9rem' }}>{sectionErrors.messages}</p>
               ) : messages.length > 0 ? (
                 messages.slice(-3).map((msg) => (
                   <div key={msg._id} className="chat-message-preview">

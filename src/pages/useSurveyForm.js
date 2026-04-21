@@ -4,9 +4,11 @@ import { saveSurvey, getSurvey } from '../api/surveys';
 import { useUser } from '../context/UserContext';
 
 export const initialSurveyFormData = {
+  name: '',
   major: '',
   year: '',
-  interests: [],
+  gender: '',
+  bio: '',
   experience: '',
   goals: '',
   sleepSchedule: '',
@@ -29,16 +31,22 @@ export const initialSurveyFormData = {
   studyStyle: ''
 };
 
-export const interestOptions = [
-  'Web Development',
-  'Mobile Development',
-  'Data Science',
-  'AI/ML',
-  'Cybersecurity',
-  'DevOps',
-  'Game Development',
-  'UI/UX Design'
-];
+const normalizeSurveyForForm = (survey) =>
+  Object.keys(initialSurveyFormData).reduce((normalized, key) => {
+    normalized[key] = survey?.[key] ?? initialSurveyFormData[key];
+    return normalized;
+  }, {});
+
+const normalizeSurveyForSubmit = (survey) =>
+  Object.entries(survey).reduce((normalized, [key, value]) => {
+    if (key === 'virtualOrInPerson' && value === 'Hybrid') {
+      normalized[key] = 'Both';
+      return normalized;
+    }
+
+    normalized[key] = value === '' ? null : value;
+    return normalized;
+  }, {});
 
 export const useSurveyForm = (successPath) => {
   const { user, updateProfile } = useUser();
@@ -56,7 +64,7 @@ export const useSurveyForm = (successPath) => {
           if (response.success && response.survey) {
             setFormData((prevData) => ({
               ...prevData,
-              ...response.survey
+              ...normalizeSurveyForForm(response.survey)
             }));
           }
         }
@@ -71,17 +79,7 @@ export const useSurveyForm = (successPath) => {
   }, [user]);
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-
-    if (type === 'checkbox') {
-      setFormData((prev) => ({
-        ...prev,
-        interests: checked
-          ? [...prev.interests, value]
-          : prev.interests.filter((interest) => interest !== value)
-      }));
-      return;
-    }
+    const { name, value } = e.target;
 
     setFormData((prev) => ({
       ...prev,
@@ -100,7 +98,7 @@ export const useSurveyForm = (successPath) => {
     setError(null);
 
     try {
-      const response = await saveSurvey(formData);
+      const response = await saveSurvey(normalizeSurveyForSubmit(formData));
 
       if (!response.success) {
         setError(response.message || 'Failed to save survey. Please try again.');

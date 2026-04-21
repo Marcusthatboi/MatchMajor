@@ -123,9 +123,9 @@ const Profile = ({ user: userProp }) => {
 
           <div className="profile-info">
             <h2>Bio</h2>
-            {mergedUser.goals ? (
+            {(mergedUser.bio || mergedUser.goals) ? (
               <div className="info-group">
-                <p>{mergedUser.goals}</p>
+                <p>{mergedUser.bio || mergedUser.goals}</p>
               </div>
             ) : (
               <div className="info-group">

@@ -71,7 +71,7 @@ const Matches = () => {
     <div className="matches-page">
       <div className="matches-header">
         <h1>Your Matches</h1>
-        <p>These students align with your study goals and interests.</p>
+        <p>These students align with your study goals.</p>
       </div>
       <div className="matches-grid">
         {matches.map((match) => (
@@ -83,13 +83,11 @@ const Matches = () => {
                 <div className="match-avatar-initials">{getInitials(match.username)}</div>
               )}
             </div>
-            <h3>{match.username}</h3>
+            <h3>{match.name || match.username}</h3>
             <p><strong>Major:</strong> {match.major || 'Not specified'}</p>
             <p><strong>Year:</strong> {match.year || 'Not specified'}</p>
             <p><strong>Experience:</strong> {match.experience || 'Not specified'}</p>
-            {match.interests && match.interests.length > 0 && (
-              <p><strong>Interests:</strong> {match.interests.slice(0, 2).join(', ')}...</p>
-            )}
+            {match.bio && <p><strong>Bio:</strong> {match.bio}</p>}
             <p className="compatibility-score" style={{ color: 'var(--primary-cyan)', fontWeight: 'bold' }}>
               ✓ {match.compatibilityScore}% Match
             </p>

@@ -89,7 +89,6 @@ const preventParameterPollution = (req, res, next) => {
   // Whitelist of fields that can have multiple values
   const whitelist = [
     'tags',
-    'interests',
     'members',
     'items',
     'sort',

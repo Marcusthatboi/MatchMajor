@@ -1,14 +1,10 @@
 import React from 'react';
-import { interestOptions, useSurveyForm } from './useSurveyForm';
+import { useSurveyForm } from './useSurveyForm';
 import './Survey.css';
 
 const validateMainSurvey = (formData) => {
-  if (!formData.major || !formData.year || !formData.experience) {
-    return 'Please fill in all required fields (Major, Year, Experience).';
-  }
-
-  if (formData.interests.length === 0) {
-    return 'Please select at least one area of interest.';
+  if (!formData.name || !formData.major || !formData.year || !formData.gender || !formData.bio) {
+    return 'Please fill in all required fields (Name, Major, Year, Gender, Bio).';
   }
 
   return null;
@@ -34,16 +30,40 @@ const Survey = () => {
 
         <form onSubmit={handleSubmit} className="survey-form">
           <div className="form-group">
+            <label htmlFor="name">What is your name?</label>
+            <input
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Enter your name"
+              required
+            />
+          </div>
+
+          <div className="form-group">
             <label htmlFor="major">What is your major/field of study?</label>
             <select id="major" name="major" value={formData.major} onChange={handleChange} required>
               <option value="">Select your major</option>
+              <option value="Accounting">Accounting</option>
+              <option value="Biology">Biology</option>
+              <option value="Business">Business</option>
+              <option value="Chemistry">Chemistry</option>
+              <option value="Communication Studies">Communication Studies</option>
               <option value="Computer Science">Computer Science</option>
+              <option value="Criminal Justice">Criminal Justice</option>
               <option value="Information Technology">Information Technology</option>
-              <option value="Software Engineering">Software Engineering</option>
               <option value="Data Science">Data Science</option>
               <option value="Cybersecurity">Cybersecurity</option>
-              <option value="Business">Business</option>
+              <option value="Education">Education</option>
               <option value="Engineering">Engineering</option>
+              <option value="Finance">Finance</option>
+              <option value="Health Sciences">Health Sciences</option>
+              <option value="Marketing">Marketing</option>
+              <option value="Mathematics">Mathematics</option>
+              <option value="Nursing">Nursing</option>
+              <option value="Psychology">Psychology</option>
+              <option value="Software Engineering">Software Engineering</option>
               <option value="Other">Other</option>
             </select>
           </div>
@@ -61,43 +81,25 @@ const Survey = () => {
           </div>
 
           <div className="form-group">
-            <label>What are your tech interests? (Select all that apply)</label>
-            <div className="checkbox-group">
-              {interestOptions.map((interest) => (
-                <label key={interest} className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    name="interests"
-                    value={interest}
-                    checked={formData.interests.includes(interest)}
-                    onChange={handleChange}
-                  />
-                  {interest}
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="experience">Programming experience level?</label>
-            <select id="experience" name="experience" value={formData.experience} onChange={handleChange} required>
-              <option value="">Select your experience level</option>
-              <option value="Beginner">Beginner (just starting)</option>
-              <option value="Intermediate">Intermediate (some experience)</option>
-              <option value="Advanced">Advanced (experienced)</option>
-              <option value="Expert">Expert (professional)</option>
+            <label htmlFor="gender">Gender</label>
+            <select id="gender" name="gender" value={formData.gender} onChange={handleChange} required>
+              <option value="">Select your gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
             </select>
           </div>
 
           <div className="form-group">
-            <label htmlFor="goals">Career goals? (Optional)</label>
+            <label htmlFor="bio">Bio</label>
             <textarea
-              id="goals"
-              name="goals"
-              value={formData.goals}
+              id="bio"
+              name="bio"
+              value={formData.bio}
               onChange={handleChange}
-              placeholder="Tell us about your career aspirations..."
+              placeholder="Tell us a little about yourself..."
               rows="3"
+              required
             />
           </div>
 

@@ -2,6 +2,24 @@
 const Survey = require('../models/Survey');
 const User = require('../models/User');
 
+const normalizeSurveyData = (surveyData) => {
+  const ignoredFields = new Set(['_id', 'id', 'userId', 'createdAt', 'updatedAt', '__v']);
+
+  return Object.entries(surveyData).reduce((normalized, [key, value]) => {
+    if (ignoredFields.has(key)) {
+      return normalized;
+    }
+
+    if (key === 'virtualOrInPerson' && value === 'Hybrid') {
+      normalized[key] = 'Both';
+      return normalized;
+    }
+
+    normalized[key] = value === '' ? null : value;
+    return normalized;
+  }, {});
+};
+
 /**
  * Create or update a user's survey/profile
  * POST/PUT /api/survey
@@ -9,10 +27,11 @@ const User = require('../models/User');
 exports.createOrUpdateSurvey = async (req, res) => {
   try {
     const userId = req.user._id;
-    const surveyData = req.body;
+    const surveyData = normalizeSurveyData(req.body);
 
     // Check if survey already exists
     let survey = await Survey.findOne({ userId });
+    const isNewSurvey = !survey;
 
     if (survey) {
       // Update existing survey
@@ -32,13 +51,13 @@ exports.createOrUpdateSurvey = async (req, res) => {
       await User.findByIdAndUpdate(userId, { survey: survey._id });
     }
 
-    res.status(survey ? 201 : 200).json({
+    res.status(isNewSurvey ? 201 : 200).json({
       success: true,
-      message: survey ? 'Survey created' : 'Survey updated',
+      message: isNewSurvey ? 'Survey created' : 'Survey updated',
       survey
     });
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') console.error(error);
+    console.error('Survey create/update error:', error);
     res.status(500).json({
       success: false,
       message: 'Error creating/updating survey',
