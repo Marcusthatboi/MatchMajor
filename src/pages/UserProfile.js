@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { getUserSurvey } from '../api/surveys';
 import './Profile.css';
 
@@ -21,6 +21,7 @@ const InfoItem = ({ label, value }) => (
 
 const UserProfile = () => {
   const { userId } = useParams();
+  const location = useLocation();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -55,6 +56,8 @@ const UserProfile = () => {
 
   const displayName = profile.name || profile.username || 'Student';
   const avatarUrl = profile.profilePhoto || profile.avatar || profile.image || null;
+  const returnTo = location.state?.returnTo || '/posts';
+  const returnLabel = location.state?.returnLabel || 'Back to Posts';
 
   return (
     <div className="profile-page readonly-profile-page">
@@ -68,7 +71,7 @@ const UserProfile = () => {
         </div>
         <h1>{displayName}</h1>
         <p>Student profile</p>
-        <Link to="/posts" className="profile-secondary-link profile-header-link">Return</Link>
+        <Link to={returnTo} className="profile-secondary-link profile-header-link">{returnLabel}</Link>
       </div>
 
       <div className="profile-content">
@@ -92,10 +95,12 @@ const UserProfile = () => {
             <h2>Study Preferences</h2>
             <InfoItem label="Current Classes" value={profile.currentClasses || profile.currentCourses} />
             <InfoItem label="Study Goals" value={profile.studyGoals} />
+            <InfoItem label="Honors/Special Programs" value={profile.honors || profile.specialPrograms} />
             <InfoItem label="Study Location" value={profile.studyLocation} />
             <InfoItem label="Study Times" value={profile.studyTimes} />
             <InfoItem label="Ideal Group Size" value={profile.idealGroupSize} />
             <InfoItem label="Format" value={profile.virtualOrInPerson || profile.studyMode} />
+            <InfoItem label="Study Habits" value={profile.studyHabits} />
             <InfoItem label="Study Style" value={profile.studyStyle} />
           </div>
 

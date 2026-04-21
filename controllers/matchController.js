@@ -10,6 +10,7 @@ const { getMatchedUsers } = require('../server/utils/matchingAlgorithm');
 const getMatches = async (req, res) => {
   try {
     const userId = req.user._id;
+    const context = req.query.context || 'comprehensive';
     
     // Get current user with their survey
     const currentUser = await User.findById(userId).populate('survey');
@@ -39,7 +40,7 @@ const getMatches = async (req, res) => {
     );
 
     // Calculate compatibility and get matches
-    const matches = await getMatchedUsers(currentUserForMatching, allUsersForMatching);
+    const matches = await getMatchedUsers(currentUserForMatching, allUsersForMatching, context);
 
     res.json({
       success: true,
@@ -55,8 +56,26 @@ const getMatches = async (req, res) => {
           year: match.year,
           experience: match.experience,
           bio: match.bio,
+          gender: match.gender,
+          campusSelection: match.campusSelection,
+          sleepSchedule: match.sleepSchedule,
+          cleanliness: match.cleanliness,
+          visitorPolicy: match.visitorPolicy,
+          items: match.items,
+          pets: match.pets,
+          socialBattery: match.socialBattery,
+          currentClasses: match.currentClasses,
+          studyGoals: match.studyGoals,
+          honors: match.honors,
+          studyLocation: match.studyLocation,
+          studyTimes: match.studyTimes,
+          idealGroupSize: match.idealGroupSize,
+          virtualOrInPerson: match.virtualOrInPerson,
+          studyHabits: match.studyHabits,
+          studyStyle: match.studyStyle,
           profilePhoto: match.profilePhoto,
-          compatibilityScore: match.compatibilityScore
+          compatibilityScore: match.compatibilityScore,
+          matchContext: match.matchContext
         };
       })
     });

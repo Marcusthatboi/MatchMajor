@@ -4,9 +4,9 @@ import { api } from './index';
 /**
  * Get match recommendations for the current user
  */
-export const getMatches = async () => {
+export const getMatches = async (context = 'comprehensive') => {
   try {
-    const response = await api.get('/matches', { skipCache: true });
+    const response = await api.get('/matches', { params: { context }, skipCache: true });
     return response;
   } catch (error) {
     console.error('Get matches error:', error);

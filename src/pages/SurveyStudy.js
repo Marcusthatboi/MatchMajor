@@ -2,18 +2,128 @@ import React from 'react';
 import { useSurveyForm } from './useSurveyForm';
 import './Survey.css';
 
+const studySelectFields = [
+  {
+    name: 'currentClasses',
+    label: 'Course Area',
+    placeholder: 'Select course area',
+    options: [
+      'Computer Science',
+      'Mathematics',
+      'Biology',
+      'Chemistry',
+      'Physics',
+      'Engineering',
+      'Business',
+      'Writing / Humanities',
+      'Social Sciences',
+      'Other'
+    ]
+  },
+  {
+    name: 'studyGoals',
+    label: 'Study Goals',
+    placeholder: 'Select primary goal',
+    options: [
+      'Homework / Problem Sets',
+      'Exam Prep',
+      'Project Collaboration',
+      'Concept Review',
+      'Accountability',
+      'Research / Writing'
+    ]
+  },
+  {
+    name: 'honors',
+    label: 'Honors or Special Programs',
+    placeholder: 'Select program type',
+    options: [
+      'Honors College',
+      'Research Program',
+      'Academic Athlete',
+      'No Special Program',
+      'Other'
+    ]
+  },
+  {
+    name: 'studyLocation',
+    label: 'Study Location',
+    placeholder: 'Select location',
+    options: [
+      'Library',
+      'Campus Study Room',
+      'Dorm / Residence Hall',
+      'Coffee Shop',
+      'Online',
+      'Flexible'
+    ]
+  },
+  {
+    name: 'studyTimes',
+    label: 'Study Times',
+    placeholder: 'Select preferred time',
+    options: [
+      'Morning',
+      'Afternoon',
+      'Evening',
+      'Late Night',
+      'Weekends',
+      'Flexible'
+    ]
+  },
+  {
+    name: 'idealGroupSize',
+    label: 'Ideal Group Size',
+    placeholder: 'Select group size',
+    options: [
+      '1-on-1',
+      '2-3 people',
+      '4-5 people',
+      '6+ people'
+    ]
+  },
+  {
+    name: 'virtualOrInPerson',
+    label: 'Virtual or In-Person?',
+    placeholder: 'Select preference',
+    options: [
+      { value: 'Virtual', label: 'Virtual' },
+      { value: 'In-Person', label: 'In-Person' },
+      { value: 'Both', label: 'Hybrid' }
+    ]
+  },
+  {
+    name: 'studyHabits',
+    label: 'Study Habits',
+    placeholder: 'Select study habit',
+    options: [
+      'Quiet Independent Study',
+      'Discussion-Based Study',
+      'Practice Problems',
+      'Teaching / Explaining',
+      'Pomodoro Sessions',
+      'Mixed'
+    ]
+  },
+  {
+    name: 'studyStyle',
+    label: 'Study Style',
+    placeholder: 'Select study style',
+    options: [
+      'Visual',
+      'Auditory',
+      'Reading / Writing',
+      'Kinesthetic',
+      'Collaborative',
+      'Mixed'
+    ]
+  }
+];
+
 const validateStudySurvey = (formData) => {
-  if (
-    !formData.currentClasses ||
-    !formData.studyGoals ||
-    !formData.honors ||
-    !formData.studyLocation ||
-    !formData.studyTimes ||
-    !formData.idealGroupSize ||
-    !formData.virtualOrInPerson ||
-    !formData.studyHabits ||
-    !formData.studyStyle
-  ) {
+  const hasMissingField = studySelectFields.some(({ name }) => !formData[name]);
+
+  if (hasMissingField) {
     return 'Please fill in all study preference fields before saving.';
   }
 
@@ -28,6 +138,34 @@ const SurveyStudy = () => {
     await submitSurvey(validateStudySurvey);
   };
 
+  const renderSelect = ({ name, label, placeholder, options }) => {
+    const selectedValue = formData[name];
+    const hasSavedValue = selectedValue && !options.some((option) => {
+      const value = typeof option === 'string' ? option : option.value;
+      return value === selectedValue;
+    });
+
+    return (
+      <div className="form-group" key={name}>
+        <label htmlFor={name}>{label}</label>
+        <select id={name} name={name} value={selectedValue} onChange={handleChange} required>
+          <option value="">{placeholder}</option>
+          {hasSavedValue && <option value={selectedValue}>{selectedValue} (saved)</option>}
+          {options.map((option) => {
+            const value = typeof option === 'string' ? option : option.value;
+            const optionLabel = typeof option === 'string' ? option : option.label;
+
+            return (
+              <option value={value} key={value}>
+                {optionLabel}
+              </option>
+            );
+          })}
+        </select>
+      </div>
+    );
+  };
+
   if (initializing) {
     return <div className="loading-container"><div className="spinner">Loading survey...</div></div>;
   }
@@ -39,55 +177,7 @@ const SurveyStudy = () => {
         <p>Update your study preferences for better study partner matching.</p>
 
         <form onSubmit={handleSubmit} className="survey-form">
-          <div className="form-group">
-            <label htmlFor="currentClasses">Current Classes</label>
-            <input id="currentClasses" name="currentClasses" value={formData.currentClasses} onChange={handleChange} placeholder="e.g. Calculus, Data Structures" required />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="studyGoals">Study Goals</label>
-            <textarea id="studyGoals" name="studyGoals" value={formData.studyGoals} onChange={handleChange} placeholder="What are your study goals?" rows="3" required />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="honors">Honors or Special Programs</label>
-            <input id="honors" name="honors" value={formData.honors} onChange={handleChange} placeholder="e.g. Honors College, Research Program" required />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="studyLocation">Study Location</label>
-            <input id="studyLocation" name="studyLocation" value={formData.studyLocation} onChange={handleChange} placeholder="e.g. library, dorm, coffee shop" required />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="studyTimes">Study Times</label>
-            <input id="studyTimes" name="studyTimes" value={formData.studyTimes} onChange={handleChange} placeholder="e.g. mornings, evenings, weekends" required />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="idealGroupSize">Ideal Group Size</label>
-            <input id="idealGroupSize" name="idealGroupSize" value={formData.idealGroupSize} onChange={handleChange} placeholder="e.g. 1-2, 3-4, 5+" required />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="virtualOrInPerson">Virtual or In-Person?</label>
-            <select id="virtualOrInPerson" name="virtualOrInPerson" value={formData.virtualOrInPerson} onChange={handleChange} required>
-              <option value="">Select preference</option>
-              <option value="Virtual">Virtual</option>
-              <option value="In-Person">In-Person</option>
-              <option value="Both">Hybrid</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="studyHabits">Study Habits</label>
-            <textarea id="studyHabits" name="studyHabits" value={formData.studyHabits} onChange={handleChange} placeholder="How do you like to study?" rows="3" required />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="studyStyle">Study Style</label>
-            <textarea id="studyStyle" name="studyStyle" value={formData.studyStyle} onChange={handleChange} placeholder="Your preferred study style (visual, kinesthetic, etc.)" rows="3" required />
-          </div>
+          {studySelectFields.map(renderSelect)}
 
           <button type="submit" className="submit-btn" disabled={loading}>
             {loading ? 'Saving...' : 'Save Preferences'}

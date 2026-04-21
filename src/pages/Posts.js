@@ -27,6 +27,115 @@ const POST_CHANNELS = {
   }
 };
 
+const YEAR_ORDER = ['Freshman', 'Sophomore', 'Junior', 'Senior', 'Graduate'];
+const GROUP_SIZE_ORDER = ['1-on-1', '2-3 people', '4-5 people', '6+ people'];
+
+const ROOMMATE_MATCH_FIELDS = [
+  { field: 'major', weight: 7, type: 'text' },
+  { field: 'year', weight: 12, type: 'ordered', order: YEAR_ORDER },
+  { field: 'gender', weight: 14, type: 'exact' },
+  { field: 'campusSelection', weight: 14, type: 'text' },
+  { field: 'sleepSchedule', weight: 8, type: 'exact' },
+  { field: 'cleanliness', weight: 9, type: 'exact' },
+  { field: 'visitorPolicy', weight: 8, type: 'text' },
+  { field: 'items', weight: 9, type: 'text' },
+  { field: 'pets', weight: 10, type: 'text' },
+  { field: 'socialBattery', weight: 9, type: 'text' }
+];
+
+const STUDY_MATCH_FIELDS = [
+  { field: 'major', weight: 15, type: 'text' },
+  { field: 'year', weight: 14, type: 'ordered', order: YEAR_ORDER },
+  { field: 'gender', weight: 5, type: 'exact' },
+  { field: 'currentClasses', weight: 10, type: 'category', flexibleValues: ['other'] },
+  { field: 'studyGoals', weight: 7, type: 'category' },
+  { field: 'honors', weight: 5, type: 'category', flexibleValues: ['other'] },
+  { field: 'studyLocation', weight: 6, type: 'category', flexibleValues: ['flexible'] },
+  { field: 'studyTimes', weight: 9, type: 'category', flexibleValues: ['flexible'] },
+  { field: 'idealGroupSize', weight: 6, type: 'ordered', order: GROUP_SIZE_ORDER },
+  { field: 'virtualOrInPerson', weight: 9, type: 'format' },
+  { field: 'studyHabits', weight: 7, type: 'category', flexibleValues: ['mixed'] },
+  { field: 'studyStyle', weight: 7, type: 'category', flexibleValues: ['mixed'] }
+];
+
+const normalizeMatchValue = (value) => String(value || '').trim().toLowerCase();
+
+const calculateTextSimilarity = (left, right) => {
+  const leftWords = normalizeMatchValue(left).split(/\s+/).filter(word => word.length > 3);
+  const rightWords = normalizeMatchValue(right).split(/\s+/).filter(word => word.length > 3);
+
+  if (leftWords.length === 0 || rightWords.length === 0) return 0;
+
+  const leftSet = new Set(leftWords);
+  const rightSet = new Set(rightWords);
+  const intersection = new Set([...leftSet].filter(word => rightSet.has(word)));
+  const union = new Set([...leftSet, ...rightSet]);
+
+  return intersection.size / union.size;
+};
+
+const scoreExactMatch = (left, right) => (
+  normalizeMatchValue(left) === normalizeMatchValue(right) ? 1 : 0
+);
+
+const scoreTextMatch = (left, right) => {
+  const normalizedLeft = normalizeMatchValue(left);
+  const normalizedRight = normalizeMatchValue(right);
+
+  if (!normalizedLeft || !normalizedRight) return 0;
+  if (normalizedLeft === normalizedRight) return 1;
+  if (normalizedLeft.includes(normalizedRight) || normalizedRight.includes(normalizedLeft)) return 0.7;
+
+  return calculateTextSimilarity(left, right);
+};
+
+const scoreOrderedMatch = (left, right, order) => {
+  const leftIndex = order.indexOf(left);
+  const rightIndex = order.indexOf(right);
+
+  if (leftIndex === -1 || rightIndex === -1) return scoreExactMatch(left, right);
+
+  const diff = Math.abs(leftIndex - rightIndex);
+  if (diff === 0) return 1;
+  if (diff === 1) return 0.72;
+  if (diff === 2) return 0.4;
+  return 0.2;
+};
+
+const scoreFormatMatch = (left, right) => {
+  if (scoreExactMatch(left, right)) return 1;
+
+  const leftValue = normalizeMatchValue(left);
+  const rightValue = normalizeMatchValue(right);
+  return leftValue === 'both' || rightValue === 'both' ? 0.75 : 0;
+};
+
+const scoreCategoryMatch = (left, right, flexibleValues = []) => {
+  if (scoreExactMatch(left, right)) return 1;
+
+  const leftValue = normalizeMatchValue(left);
+  const rightValue = normalizeMatchValue(right);
+  const normalizedFlexibleValues = flexibleValues.map(normalizeMatchValue);
+
+  return normalizedFlexibleValues.includes(leftValue) || normalizedFlexibleValues.includes(rightValue) ? 0.65 : 0;
+};
+
+const scoreWeightedMatchField = (left, right, config) => {
+  switch (config.type) {
+    case 'ordered':
+      return scoreOrderedMatch(left, right, config.order || []);
+    case 'format':
+      return scoreFormatMatch(left, right);
+    case 'category':
+      return scoreCategoryMatch(left, right, config.flexibleValues);
+    case 'text':
+      return scoreTextMatch(left, right);
+    case 'exact':
+    default:
+      return scoreExactMatch(left, right);
+  }
+};
+
 const getPostTypeFromSearch = (search) => {
   const postType = new URLSearchParams(search).get('type');
   return POST_CHANNELS[postType] ? postType : 'roommate';
@@ -393,23 +502,20 @@ const Posts = () => {
     const profile = getAuthorProfile(post);
     if (!currentSurvey || !profile) return null;
 
-    const comparisons = activePostType === 'roommate'
-      ? ['campusSelection', 'sleepSchedule', 'cleanliness', 'socialBattery']
-      : ['major', 'year', 'studyLocation', 'studyTimes', 'virtualOrInPerson', 'studyStyle'];
+    const comparisons = activePostType === 'roommate' ? ROOMMATE_MATCH_FIELDS : STUDY_MATCH_FIELDS;
 
-    let available = 0;
-    let matches = 0;
+    let availableWeight = 0;
+    let earnedWeight = 0;
 
-    comparisons.forEach(field => {
+    comparisons.forEach(config => {
+      const field = config.field;
       if (currentSurvey[field] && profile[field]) {
-        available += 1;
-        if (String(currentSurvey[field]).toLowerCase() === String(profile[field]).toLowerCase()) {
-          matches += 1;
-        }
+        availableWeight += config.weight;
+        earnedWeight += scoreWeightedMatchField(currentSurvey[field], profile[field], config) * config.weight;
       }
     });
 
-    return available ? Math.round((matches / available) * 100) : null;
+    return availableWeight ? Math.round((earnedWeight / availableWeight) * 100) : null;
   };
 
   const getLineupUsers = (post) => {
