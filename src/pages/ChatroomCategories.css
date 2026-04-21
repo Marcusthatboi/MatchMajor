@@ -1,9 +1,20 @@
 .chatroom-categories-page {
+  width: calc(100% + 40px);
+  min-height: calc(100vh - 40px);
+  margin: -20px 0 0 -20px;
+  padding: 40px 20px 60px;
+  box-sizing: border-box;
+  background: white;
+  border-top: 3px solid var(--brown);
+}
+
+.categories-header,
+.categories-grid,
+.categories-footer,
+.chatroom-categories-page > .error-message {
   max-width: 1200px;
-  margin: 0 auto;
-  padding: 40px 20px;
-  min-height: 100vh;
-  background: linear-gradient(135deg, rgba(9, 166, 173, 0.05) 0%, rgba(250, 200, 0, 0.03) 100%);
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .categories-header {
@@ -390,7 +401,10 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .chatroom-categories-page {
-    padding: 20px 15px;
+    width: calc(100% + 30px);
+    min-height: calc(100vh - 30px);
+    margin: -15px 0 0 -15px;
+    padding: 20px 15px 48px;
   }
 
   .header-top {

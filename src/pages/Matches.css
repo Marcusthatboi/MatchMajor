@@ -1,13 +1,56 @@
+
+.matches-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 36px 24px 72px;
+}
+
+.matches-header {
+  text-align: center;
+  margin-bottom: 48px;
+  background: linear-gradient(to right, var(--brown), var(--gold));
+  padding: 20px 10px;
+  border-radius: 8px;
+}
+
+.matches-header h1 {
+  margin: 0 0 12px;
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: white;
+}
+
+.matches-header p {
+  color: white;
+  font-size: 1.1rem;
+  margin: 0 0 24px;
+}
+
+
+/*
 .matches-page {
   max-width: 1000px;
   margin: 40px auto;
   padding: 0 20px;
 }
 
-.matches-page h1 {
+.matches-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.matches-header h1 {
   color: var(--brown);
   margin-bottom: 8px;
+  background: linear-gradient(to right, var(--brown), var(--gold)); 
 }
+*/
+.posts-header p {
+  color: #666;
+  font-size: 1.1rem;
+  margin: 0 0 24px;
+}
+
 
 .matches-page p {
   margin-bottom: 20px;

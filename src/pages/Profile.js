@@ -116,6 +116,9 @@ const Profile = ({ user: userProp }) => {
               <label>Gender: {mergedUser.gender || 'Not specified'}</label>
               {/* There can be an "other" option */}
             </div>
+            <Link to="/survey" className="edit-profile-btn">
+              Update Information
+            </Link>
           </div>
 
           <div className="profile-info">

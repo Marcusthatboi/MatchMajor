@@ -69,8 +69,10 @@ const Matches = () => {
 
   return (
     <div className="matches-page">
-      <h1>Your Matches</h1>
-      <p>These students align with your study goals and interests.</p>
+      <div className="matches-header">
+        <h1>Your Matches</h1>
+        <p>These students align with your study goals and interests.</p>
+      </div>
       <div className="matches-grid">
         {matches.map((match) => (
           <div key={match._id} className="match-card">
