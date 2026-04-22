@@ -36,13 +36,14 @@ export const getChatroom = async (chatroomId) => {
 /**
  * Create a new chatroom
  */
-export const createChatroom = async (name, description, color, isPrivate = false) => {
+export const createChatroom = async (name, description, color, isPrivate = false, password = '') => {
   try {
     const response = await api.post(API_URL, {
       name,
       description,
       color,
-      isPrivate
+      isPrivate,
+      password
     });
     return response;
   } catch (error) {
@@ -67,14 +68,31 @@ export const deleteChatroom = async (chatroomId) => {
 /**
  * Join a chatroom
  */
-export const joinChatroom = async (chatroomId) => {
+export const joinChatroom = async (chatroomId, password = '') => {
   try {
     const response = await api.post(`${API_URL}/join`, {
-      chatroomId
+      chatroomId,
+      password
     });
     return response;
   } catch (error) {
     console.error('Join chatroom error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Join a private chatroom by exact chatroom name and password
+ */
+export const joinPrivateChatroom = async (name, password = '') => {
+  try {
+    const response = await api.post(`${API_URL}/join`, {
+      name,
+      password
+    });
+    return response;
+  } catch (error) {
+    console.error('Join private chatroom error:', error);
     throw error;
   }
 };

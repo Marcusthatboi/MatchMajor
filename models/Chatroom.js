@@ -77,6 +77,12 @@ const chatroomSchema = new mongoose.Schema({
     default: false
   },
 
+  privatePasswordHash: {
+    type: String,
+    default: null,
+    select: false
+  },
+
   // Direct one-on-one chat created from an accepted profile chat request
   isDirect: {
     type: Boolean,

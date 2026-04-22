@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { getAllChatrooms, createChatroom as apiCreateChatroom, deleteChatroom as apiDeleteChatroom } from '../api/chatrooms';
+import {
+  getAllChatrooms,
+  createChatroom as apiCreateChatroom,
+  deleteChatroom as apiDeleteChatroom,
+  joinPrivateChatroom as apiJoinPrivateChatroom
+} from '../api/chatrooms';
 import './ChatroomCategories.css';
 
 const POST_ROOM_NAMES = new Set(['Roommate Posts', 'Study Group Posts']);
@@ -8,10 +13,14 @@ const ChatroomCategories = ({ onSelectCategory, user }) => {
   const [chatrooms, setChatrooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showJoinModal, setShowJoinModal] = useState(false);
+  const [joinRoomName, setJoinRoomName] = useState('');
+  const [joinPassword, setJoinPassword] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    isPrivate: false
+    isPrivate: false,
+    password: ''
   });
   const [error, setError] = useState(null);
 
@@ -37,7 +46,26 @@ const ChatroomCategories = ({ onSelectCategory, user }) => {
     }
   };
 
+  const isChatroomMember = (chatroom) => (
+    Boolean(user?._id) && chatroom.members?.some((member) => {
+      const memberId = typeof member === 'object' ? member?._id : member;
+      return memberId?.toString() === user._id.toString();
+    })
+  );
+
+  const openJoinModal = (chatroom = null) => {
+    setError(null);
+    setJoinRoomName(chatroom?.name || '');
+    setJoinPassword('');
+    setShowJoinModal(true);
+  };
+
   const handleSelectCategory = (chatroom) => {
+    if (chatroom.isPrivate && !isChatroomMember(chatroom)) {
+      openJoinModal(chatroom);
+      return;
+    }
+
     onSelectCategory(chatroom);
   };
 
@@ -78,18 +106,29 @@ const ChatroomCategories = ({ onSelectCategory, user }) => {
       return;
     }
 
+    if (formData.isPrivate && formData.password.trim().length < 4) {
+      setError('Private chatroom password must be at least 4 characters');
+      return;
+    }
+
     try {
       setError(null); // Clear previous errors
       const randomColor = predefinedColors[Math.floor(Math.random() * predefinedColors.length)];
       console.log('Creating chatroom:', { name: formData.name, description: formData.description, color: randomColor });
       
-      const response = await apiCreateChatroom(formData.name, formData.description, randomColor, formData.isPrivate);
+      const response = await apiCreateChatroom(
+        formData.name,
+        formData.description,
+        randomColor,
+        formData.isPrivate,
+        formData.password
+      );
       console.log('Create chatroom response:', response);
       
       if (response && response.success && response.data) {
         console.log('Chatroom created successfully:', response.data);
         setChatrooms((prev) => [response.data, ...prev]);
-        setFormData({ name: '', description: '', isPrivate: false });
+        setFormData({ name: '', description: '', isPrivate: false, password: '' });
         setShowCreateModal(false);
       } else {
         console.error('Invalid response structure:', response);
@@ -110,6 +149,45 @@ const ChatroomCategories = ({ onSelectCategory, user }) => {
     }));
   };
 
+  const handleJoinPrivateChatroom = async (e) => {
+    e.preventDefault();
+
+    if (!joinRoomName.trim()) {
+      setError('Enter the private chatroom name');
+      return;
+    }
+
+    if (!joinPassword.trim()) {
+      setError('Enter the private chatroom password');
+      return;
+    }
+
+    try {
+      setError(null);
+      const response = await apiJoinPrivateChatroom(joinRoomName.trim(), joinPassword.trim());
+
+      if (response.success && response.data) {
+        setChatrooms((prev) => {
+          const alreadyListed = prev.some((room) => room._id === response.data._id);
+          if (alreadyListed) {
+            return prev.map((room) => (room._id === response.data._id ? response.data : room));
+          }
+          return [response.data, ...prev];
+        });
+        setShowJoinModal(false);
+        setJoinRoomName('');
+        setJoinPassword('');
+        onSelectCategory(response.data);
+      } else {
+        setError(response.message || 'Failed to join chatroom');
+      }
+    } catch (error) {
+      console.error('Failed to join private chatroom:', error);
+      const errorMsg = error?.response?.data?.message || error.message || 'Failed to join chatroom';
+      setError(errorMsg);
+    }
+  };
+
   if (loading) {
     return <div className="page"><p>Loading chatrooms...</p></div>;
   }
@@ -122,9 +200,14 @@ const ChatroomCategories = ({ onSelectCategory, user }) => {
             <h1>Study Chatrooms</h1>
             <p>Join a study group and connect with classmates</p>
           </div>
-          <button className="create-chatroom-btn" onClick={() => setShowCreateModal(true)}>
-            + Create Chatroom
-          </button>
+          <div className="header-actions">
+            <button className="join-chatroom-header-btn" onClick={() => openJoinModal()}>
+              Join Chatroom
+            </button>
+            <button className="create-chatroom-btn" onClick={() => setShowCreateModal(true)}>
+              + Create Chatroom
+            </button>
+          </div>
         </div>
       </div>
 
@@ -161,7 +244,13 @@ const ChatroomCategories = ({ onSelectCategory, user }) => {
                   </div>
                 </div>
 
-                <button className="join-btn">
+                <button
+                  className="join-btn"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleSelectCategory(chatroom);
+                  }}
+                >
                   Join Chatroom →
                 </button>
                 {canDeleteChatroom(chatroom) && (
@@ -227,7 +316,11 @@ const ChatroomCategories = ({ onSelectCategory, user }) => {
                     type="checkbox"
                     name="isPrivate"
                     checked={formData.isPrivate}
-                    onChange={(e) => setFormData({ ...formData, isPrivate: e.target.checked })}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      isPrivate: e.target.checked,
+                      password: e.target.checked ? formData.password : ''
+                    })}
                   />
                   <span className="checkbox-label">Private Chatroom</span>
                 </label>
@@ -238,13 +331,29 @@ const ChatroomCategories = ({ onSelectCategory, user }) => {
                 </p>
               </div>
 
+              {formData.isPrivate && (
+                <div className="form-group">
+                  <label htmlFor="chatroom-password">Private Password</label>
+                  <input
+                    id="chatroom-password"
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    placeholder="Enter a password members will use to join"
+                    minLength={4}
+                    required={formData.isPrivate}
+                  />
+                </div>
+              )}
+
               <div className="modal-actions">
                 <button
                   type="button"
                   className="btn cancel"
                   onClick={() => {
                     setShowCreateModal(false);
-                    setFormData({ name: '', description: '', isPrivate: false });
+                    setFormData({ name: '', description: '', isPrivate: false, password: '' });
                     setError(null);
                   }}
                 >
@@ -252,6 +361,58 @@ const ChatroomCategories = ({ onSelectCategory, user }) => {
                 </button>
                 <button type="submit" className="btn create">
                   Create Chatroom
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showJoinModal && (
+        <div className="modal-overlay" onClick={() => setShowJoinModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Join Private Chatroom</h2>
+            {error && <p className="modal-error">{error}</p>}
+            <form onSubmit={handleJoinPrivateChatroom} className="create-chatroom-form">
+              <div className="form-group">
+                <label htmlFor="join-chatroom-name">Chatroom Name</label>
+                <input
+                  id="join-chatroom-name"
+                  type="text"
+                  value={joinRoomName}
+                  onChange={(e) => setJoinRoomName(e.target.value)}
+                  placeholder="Enter the exact private chatroom name"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="join-chatroom-password">Password</label>
+                <input
+                  id="join-chatroom-password"
+                  type="password"
+                  value={joinPassword}
+                  onChange={(e) => setJoinPassword(e.target.value)}
+                  placeholder="Enter the private chatroom password"
+                  required
+                />
+              </div>
+
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="btn cancel"
+                  onClick={() => {
+                    setShowJoinModal(false);
+                    setJoinRoomName('');
+                    setJoinPassword('');
+                    setError(null);
+                  }}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn create">
+                  Join Chatroom
                 </button>
               </div>
             </form>
