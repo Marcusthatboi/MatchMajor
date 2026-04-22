@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import ChatroomCategories from './ChatroomCategories';
 import { sendMessage as apiSendMessage, getMessages } from '../api/messages';
 import { createPost as apiCreatePost, getPosts, likePost as apiLikePost, addComment as apiAddComment } from '../api/chatroomPosts';
 import './ChatRoom.css';
 
 const ChatRoom = ({ user }) => {
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const location = useLocation();
+  const [selectedCategory, setSelectedCategory] = useState(location.state?.selectedChatroom || null);
   const [activeTab, setActiveTab] = useState('chat');
   const [messages, setMessages] = useState([]);
   const [posts, setPosts] = useState([]);
@@ -24,6 +26,13 @@ const ChatRoom = ({ user }) => {
       loadPosts();
     }
   }, [selectedCategory?._id]);
+
+  useEffect(() => {
+    if (location.state?.selectedChatroom) {
+      setSelectedCategory(location.state.selectedChatroom);
+      setActiveTab('chat');
+    }
+  }, [location.state]);
 
   const loadMessages = async () => {
     try {
@@ -182,7 +191,7 @@ const ChatRoom = ({ user }) => {
   return (
     <>
       {!selectedCategory ? (
-        <ChatroomCategories onSelectCategory={setSelectedCategory} />
+        <ChatroomCategories onSelectCategory={setSelectedCategory} user={user} />
       ) : (
         <div className="chat-page">
           <div className="chat-header">

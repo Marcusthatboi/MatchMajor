@@ -209,6 +209,24 @@
   transform: translateX(2px);
 }
 
+.delete-chatroom-btn {
+  margin-top: 10px;
+  background: #fff;
+  color: #b42318;
+  border: 1px solid rgba(180, 35, 24, 0.28);
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.delete-chatroom-btn:hover {
+  background: #fff1f0;
+  border-color: rgba(180, 35, 24, 0.5);
+}
+
 .categories-footer {
   text-align: center;
   padding: 20px;

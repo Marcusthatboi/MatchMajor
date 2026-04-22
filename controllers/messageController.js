@@ -8,6 +8,21 @@ exports.getMessages = async (req, res) => {
     const { chatroomId } = req.params;
     const { limit = 50 } = req.query;
 
+    const chatroom = await Chatroom.findById(chatroomId);
+    if (!chatroom) {
+      return res.status(404).json({
+        success: false,
+        message: 'Chatroom not found'
+      });
+    }
+
+    if (chatroom.isDirect && !chatroom.members.some(memberId => memberId.toString() === req.user._id.toString())) {
+      return res.status(403).json({
+        success: false,
+        message: 'You are not a member of this private chat'
+      });
+    }
+
     const messages = await Message.find({ chatroom: chatroomId })
       .populate('user', 'username email profilePhoto')
       .sort('-createdAt')
@@ -65,6 +80,13 @@ exports.sendMessage = async (req, res) => {
       });
     }
     console.log('✅ Chatroom found');
+
+    if (chatroom.isDirect && !chatroom.members.some(memberId => memberId.toString() === req.user._id.toString())) {
+      return res.status(403).json({
+        success: false,
+        message: 'You are not a member of this private chat'
+      });
+    }
 
     // Auto-add user to members if not already a member
     if (!chatroom.members.includes(req.user._id)) {

@@ -142,10 +142,7 @@ const getPostTypeFromSearch = (search) => {
 };
 
 const findChannelRoom = (rooms, channel) => {
-  return rooms.find(room => {
-    const searchable = `${room.name || ''} ${room.description || ''} ${room.category || ''}`.toLowerCase();
-    return channel.keywords.some(keyword => searchable.includes(keyword));
-  });
+  return rooms.find(room => normalizeMatchValue(room.name) === normalizeMatchValue(channel.roomName));
 };
 
 const Posts = () => {

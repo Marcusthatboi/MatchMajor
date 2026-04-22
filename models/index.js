@@ -8,11 +8,13 @@ const Survey = require('./Survey');
 const Chatroom = require('./Chatroom');
 const Message = require('./Message');
 const Post = require('./Post');
+const ChatRequest = require('./ChatRequest');
 
 module.exports = {
   User,
   Survey,
   Chatroom,
   Message,
-  Post
+  Post,
+  ChatRequest
 };

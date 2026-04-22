@@ -94,6 +94,7 @@ function setupRoutes() {
   const postRoutes = require('../routes/postRoutes');
   const messageRoutes = require('../routes/messageRoutes');
   const chatroomRoutes = require('../routes/chatroomRoutes');
+  const chatRequestRoutes = require('../routes/chatRequestRoutes');
   const healthRoutes = require('./routes/health');
   
   // Register routes with appropriate middleware
@@ -104,6 +105,7 @@ function setupRoutes() {
   app.use('/api/posts', postRoutes);
   app.use('/api/messages', messageRoutes);
   app.use('/api/chatroom', chatroomRoutes);
+  app.use('/api/chat-requests', chatRequestRoutes);
 
   // 404 handler - must be before error handler
   app.use('*', (req, res, next) => {

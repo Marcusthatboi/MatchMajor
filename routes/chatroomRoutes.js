@@ -6,7 +6,8 @@ const {
   createChatroom,
   joinChatroom,
   leaveChatroom,
-  getChatroom
+  getChatroom,
+  deleteChatroom
 } = require('../controllers/chatroomController');
 const { protect } = require('../server/middleware/authMiddleware_enhanced');
 
@@ -17,6 +18,7 @@ router.get('/', getAllChatrooms);
 router.post('/', createChatroom);
 router.post('/join', joinChatroom);
 router.post('/leave', leaveChatroom);
+router.delete('/:id', deleteChatroom);
 router.get('/:id', getChatroom);
 
 module.exports = router;

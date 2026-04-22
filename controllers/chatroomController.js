@@ -1,12 +1,20 @@
 // server/controllers/chatroomController.js
 const Chatroom = require('../models/Chatroom');
+const Message = require('../models/Message');
+const Post = require('../models/Post');
 const User = require('../models/User');
+const mongoose = require('mongoose');
 
 // Get all chatrooms (predefined + custom)
 exports.getAllChatrooms = async (req, res) => {
   try {
     console.log('Fetching all chatrooms...');
-    const chatrooms = await Chatroom.find()
+    const chatrooms = await Chatroom.find({
+      $or: [
+        { isDirect: { $ne: true } },
+        { isDirect: true, members: req.user._id }
+      ]
+    })
       .populate('creator', 'username')
       .populate('members', 'username')
       .sort('-createdAt');
@@ -156,6 +164,56 @@ exports.leaveChatroom = async (req, res) => {
   }
 };
 
+// Delete a chatroom and its content. Only the creator or an admin can delete.
+exports.deleteChatroom = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid chatroom ID'
+      });
+    }
+
+    const chatroom = await Chatroom.findById(id);
+    if (!chatroom) {
+      return res.status(404).json({
+        success: false,
+        message: 'Chatroom not found'
+      });
+    }
+
+    const isCreator = chatroom.isCreator(req.user._id);
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isCreator && !isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only the chatroom creator can delete this chatroom'
+      });
+    }
+
+    await Promise.all([
+      Message.deleteMany({ chatroom: id }),
+      Post.deleteMany({ chatroom: id }),
+      Chatroom.findByIdAndDelete(id)
+    ]);
+
+    res.status(200).json({
+      success: true,
+      message: 'Chatroom deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error in deleteChatroom:', error.message, error.stack);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
 // Get chatroom details
 exports.getChatroom = async (req, res) => {
   try {
@@ -169,6 +227,13 @@ exports.getChatroom = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Chatroom not found'
+      });
+    }
+
+    if (chatroom.isDirect && !chatroom.members.some(memberId => memberId.toString() === req.user._id.toString())) {
+      return res.status(403).json({
+        success: false,
+        message: 'You are not a member of this private chat'
       });
     }
 

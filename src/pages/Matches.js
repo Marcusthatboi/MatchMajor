@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getMatches } from '../api/matches';
+import ChatRequestsSidebar from '../components/ChatRequestsSidebar';
 import './Matches.css';
 
 const Matches = () => {
@@ -101,34 +102,38 @@ const Matches = () => {
         <h1>Your Matches</h1>
         <p>These students align with your study goals.</p>
       </div>
-      <div className="matches-grid">
-        {matches.map((match) => (
-          <div
-            key={match._id}
-            className="match-card"
-            role="link"
-            tabIndex={0}
-            onClick={(event) => handleMatchCardClick(event, getMatchProfileId(match))}
-            onKeyDown={(event) => handleMatchCardKeyDown(event, getMatchProfileId(match))}
-          >
-            <div className="match-avatar-container">
-              {match.profilePhoto ? (
-                <img src={match.profilePhoto} alt={`${match.username} avatar`} className="match-avatar" />
-              ) : (
-                <div className="match-avatar-initials">{getInitials(match.username)}</div>
-              )}
-            </div>
-            <h3>{match.name || match.username}</h3>
-            <p><strong>Major:</strong> {match.major || 'Not specified'}</p>
-            <p><strong>Year:</strong> {match.year || 'Not specified'}</p>
-            <p><strong>Experience:</strong> {match.experience || 'Not specified'}</p>
-            {match.bio && <p><strong>Bio:</strong> {match.bio}</p>}
-            <p className="compatibility-score" style={{ color: 'var(--primary-cyan)', fontWeight: 'bold' }}>
-              ✓ {match.compatibilityScore}% Match
-            </p>
-            <Link to="/chat" className="chat-link">Chat</Link>
+      <div className="matches-body">
+        <ChatRequestsSidebar />
+        <section className="matches-main">
+          <div className="matches-grid">
+            {matches.map((match) => (
+              <div
+                key={match._id}
+                className="match-card"
+                role="link"
+                tabIndex={0}
+                onClick={(event) => handleMatchCardClick(event, getMatchProfileId(match))}
+                onKeyDown={(event) => handleMatchCardKeyDown(event, getMatchProfileId(match))}
+              >
+                <div className="match-avatar-container">
+                  {match.profilePhoto ? (
+                    <img src={match.profilePhoto} alt={`${match.username} avatar`} className="match-avatar" />
+                  ) : (
+                    <div className="match-avatar-initials">{getInitials(match.username)}</div>
+                  )}
+                </div>
+                <h3>{match.name || match.username}</h3>
+                <p><strong>Major:</strong> {match.major || 'Not specified'}</p>
+                <p><strong>Year:</strong> {match.year || 'Not specified'}</p>
+                {match.bio && <p><strong>Bio:</strong> {match.bio}</p>}
+                <p className="compatibility-score" style={{ color: 'var(--primary-cyan)', fontWeight: 'bold' }}>
+                  Match: {match.compatibilityScore}%
+                </p>
+                <Link to={`/profile/${getMatchProfileId(match)}`} className="chat-link">View Profile</Link>
+              </div>
+            ))}
           </div>
-        ))}
+        </section>
       </div>
     </div>
   );

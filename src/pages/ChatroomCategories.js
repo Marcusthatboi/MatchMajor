@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { getAllChatrooms, createChatroom as apiCreateChatroom } from '../api/chatrooms';
+import { getAllChatrooms, createChatroom as apiCreateChatroom, deleteChatroom as apiDeleteChatroom } from '../api/chatrooms';
 import './ChatroomCategories.css';
+
+const POST_ROOM_NAMES = new Set(['Roommate Posts', 'Study Group Posts']);
 
 const ChatroomCategories = ({ onSelectCategory, user }) => {
   const [chatrooms, setChatrooms] = useState([]);
@@ -25,7 +27,7 @@ const ChatroomCategories = ({ onSelectCategory, user }) => {
       setLoading(true);
       const response = await getAllChatrooms();
       if (response.success) {
-        setChatrooms(response.data);
+        setChatrooms((response.data || []).filter((chatroom) => !POST_ROOM_NAMES.has(chatroom.name)));
       }
     } catch (error) {
       console.error('Failed to load chatrooms:', error);
@@ -37,6 +39,36 @@ const ChatroomCategories = ({ onSelectCategory, user }) => {
 
   const handleSelectCategory = (chatroom) => {
     onSelectCategory(chatroom);
+  };
+
+  const getCreatorId = (chatroom) => (
+    typeof chatroom.creator === 'object' ? chatroom.creator?._id : chatroom.creator
+  );
+
+  const canDeleteChatroom = (chatroom) => (
+    user?._id && getCreatorId(chatroom)?.toString() === user._id.toString()
+  );
+
+  const handleDeleteChatroom = async (event, chatroom) => {
+    event.stopPropagation();
+
+    const confirmed = window.confirm(`Delete "${chatroom.name}"? This will remove its messages and posts.`);
+    if (!confirmed) return;
+
+    try {
+      setError(null);
+      const response = await apiDeleteChatroom(chatroom._id);
+
+      if (response.success) {
+        setChatrooms((prev) => prev.filter((room) => room._id !== chatroom._id));
+      } else {
+        setError(response.message || 'Failed to delete chatroom');
+      }
+    } catch (error) {
+      console.error('Failed to delete chatroom:', error);
+      const errorMsg = error?.response?.data?.message || error.message || 'Failed to delete chatroom';
+      setError(errorMsg);
+    }
   };
 
   const handleCreateChatroom = async (e) => {
@@ -132,6 +164,15 @@ const ChatroomCategories = ({ onSelectCategory, user }) => {
                 <button className="join-btn">
                   Join Chatroom →
                 </button>
+                {canDeleteChatroom(chatroom) && (
+                  <button
+                    type="button"
+                    className="delete-chatroom-btn"
+                    onClick={(event) => handleDeleteChatroom(event, chatroom)}
+                  >
+                    Delete Chatroom
+                  </button>
+                )}
               </div>
             </div>
           ))

@@ -52,6 +52,19 @@ export const createChatroom = async (name, description, color, isPrivate = false
 };
 
 /**
+ * Delete a chatroom. Only the creator can delete it.
+ */
+export const deleteChatroom = async (chatroomId) => {
+  try {
+    const response = await api.delete(`${API_URL}/${chatroomId}`);
+    return response;
+  } catch (error) {
+    console.error('Delete chatroom error:', error);
+    throw error;
+  }
+};
+
+/**
  * Join a chatroom
  */
 export const joinChatroom = async (chatroomId) => {

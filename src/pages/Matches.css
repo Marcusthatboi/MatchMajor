@@ -1,6 +1,6 @@
 
 .matches-page {
-  max-width: 800px;
+  max-width: 1320px;
   margin: 0 auto;
   padding: 36px 24px 72px;
 }
@@ -54,6 +54,22 @@
 
 .matches-page p {
   margin-bottom: 20px;
+}
+
+.matches-body {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+}
+
+.matches-body .chat-requests-sidebar {
+  position: sticky;
+  top: 92px;
+}
+
+.matches-main {
+  min-width: 0;
 }
 
 .matches-grid {
@@ -122,4 +138,14 @@
   color: var(--primary-cyan);
   font-weight: 600;
   text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .matches-body {
+    grid-template-columns: 1fr;
+  }
+
+  .matches-body .chat-requests-sidebar {
+    position: static;
+  }
 }
