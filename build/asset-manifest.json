@@ -1,17 +1,17 @@
 {
   "files": {
-    "main.css": "/static/css/main.8e78b032.css",
-    "main.js": "/static/js/main.347baadf.js",
+    "main.css": "/static/css/main.2e568374.css",
+    "main.js": "/static/js/main.c103663d.js",
     "static/media/background.jpeg": "/static/media/background.ab093c51d94c9293845e.jpeg",
     "static/media/MatchMajor logo HZ.png": "/static/media/MatchMajor logo HZ.d3964113d9b626184eb8.png",
     "static/media/MatchMajor logo Full.png": "/static/media/MatchMajor logo Full.a5696ac66e2c11702260.png",
     "static/media/rowanU-logo.png": "/static/media/rowanU-logo.2319706b0832fab78d7f.png",
     "index.html": "/index.html",
-    "main.8e78b032.css.map": "/static/css/main.8e78b032.css.map",
-    "main.347baadf.js.map": "/static/js/main.347baadf.js.map"
+    "main.2e568374.css.map": "/static/css/main.2e568374.css.map",
+    "main.c103663d.js.map": "/static/js/main.c103663d.js.map"
   },
   "entrypoints": [
-    "static/css/main.8e78b032.css",
-    "static/js/main.347baadf.js"
+    "static/css/main.2e568374.css",
+    "static/js/main.c103663d.js"
   ]
 }
