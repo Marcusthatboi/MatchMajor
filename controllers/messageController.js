@@ -2,11 +2,28 @@
 const Message = require('../models/Message');
 const Chatroom = require('../models/Chatroom');
 
+const idsMatch = (left, right) => left?.toString() === right?.toString();
+
 // Get messages for a chatroom
 exports.getMessages = async (req, res) => {
   try {
     const { chatroomId } = req.params;
     const { limit = 50 } = req.query;
+
+    const chatroom = await Chatroom.findById(chatroomId);
+    if (!chatroom) {
+      return res.status(404).json({
+        success: false,
+        message: 'Chatroom not found'
+      });
+    }
+
+    if ((chatroom.isDirect || chatroom.isPrivate) && !chatroom.members.some(memberId => idsMatch(memberId, req.user._id))) {
+      return res.status(403).json({
+        success: false,
+        message: 'You are not a member of this private chatroom'
+      });
+    }
 
     const messages = await Message.find({ chatroom: chatroomId })
       .populate('user', 'username email profilePhoto')
@@ -66,8 +83,15 @@ exports.sendMessage = async (req, res) => {
     }
     console.log('✅ Chatroom found');
 
+    if ((chatroom.isDirect || chatroom.isPrivate) && !chatroom.members.some(memberId => idsMatch(memberId, req.user._id))) {
+      return res.status(403).json({
+        success: false,
+        message: 'You are not a member of this private chatroom'
+      });
+    }
+
     // Auto-add user to members if not already a member
-    if (!chatroom.members.includes(req.user._id)) {
+    if (!chatroom.members.some(memberId => idsMatch(memberId, req.user._id))) {
       console.log('📝 Adding user to chatroom members');
       chatroom.members.push(req.user._id);
       chatroom.memberCount = chatroom.members.length;

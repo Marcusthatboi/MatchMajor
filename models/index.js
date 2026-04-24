@@ -4,21 +4,17 @@
  */
 
 const User = require('./User');
-const Product = require('./Product');
-const Order = require('./Order');
-const Cart = require('./Cart');
 const Survey = require('./Survey');
 const Chatroom = require('./Chatroom');
 const Message = require('./Message');
 const Post = require('./Post');
+const ChatRequest = require('./ChatRequest');
 
 module.exports = {
   User,
-  Product,
-  Order,
-  Cart,
   Survey,
   Chatroom,
   Message,
-  Post
+  Post,
+  ChatRequest
 };

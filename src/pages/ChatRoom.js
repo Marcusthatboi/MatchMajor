@@ -1,29 +1,36 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import ChatroomCategories from './ChatroomCategories';
 import { sendMessage as apiSendMessage, getMessages } from '../api/messages';
-import { createPost as apiCreatePost, getPosts, likePost as apiLikePost, addComment as apiAddComment } from '../api/chatroomPosts';
 import './ChatRoom.css';
 
+const getMemberId = (member) => (typeof member === 'object' ? member?._id : member);
+
+const getMemberName = (member) => (
+  typeof member === 'object' ? member?.username || member?.name || 'Student' : 'Student'
+);
+
 const ChatRoom = ({ user }) => {
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const location = useLocation();
+  const [selectedCategory, setSelectedCategory] = useState(location.state?.selectedChatroom || null);
   const [activeTab, setActiveTab] = useState('chat');
   const [messages, setMessages] = useState([]);
-  const [posts, setPosts] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showPostModal, setShowPostModal] = useState(false);
-  const [newContent, setNewContent] = useState('');
-  const [expandedPost, setExpandedPost] = useState(null);
-  const [commentText, setCommentText] = useState({});
   const messagesEndRef = useRef(null);
 
-  // Load messages and posts when chatroom is selected
   useEffect(() => {
     if (selectedCategory?._id) {
       loadMessages();
-      loadPosts();
     }
   }, [selectedCategory?._id]);
+
+  useEffect(() => {
+    if (location.state?.selectedChatroom) {
+      setSelectedCategory(location.state.selectedChatroom);
+      setActiveTab('chat');
+    }
+  }, [location.state]);
 
   const loadMessages = async () => {
     try {
@@ -41,124 +48,23 @@ const ChatRoom = ({ user }) => {
     }
   };
 
-  const loadPosts = async () => {
-    try {
-      const response = await getPosts(selectedCategory._id);
-      if (response.success) {
-        setPosts(response.data);
-      } else {
-        console.error('Failed to load posts:', response.message);
-      }
-    } catch (error) {
-      console.error('Failed to load posts:', error);
-    }
-  };
-
   const sendMessage = async () => {
-    if (!input.trim() || !user) {
-      console.warn('⚠️ Cannot send message: input empty or no user');
-      return;
-    }
-    
+    if (!input.trim() || !user) return;
+
     try {
-      console.log('📨 Attempting to send message:', { input, userId: user._id, chatroomId: selectedCategory._id });
       const response = await apiSendMessage(selectedCategory._id, input.trim());
-      console.log('📨 Send message response:', response);
-      
+
       if (response.success) {
-        console.log('✅ Message sent successfully');
         setMessages((prev) => [...prev, response.data]);
         setInput('');
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       } else {
-        const errorMsg = response.message || 'Unknown error';
-        console.error('❌ API returned failure:', errorMsg);
-        alert('Failed to send message: ' + errorMsg);
+        alert(`Failed to send message: ${response.message || 'Unknown error'}`);
       }
     } catch (error) {
-      console.error('❌ Exception while sending message:', error);
+      console.error('Failed to send message:', error);
       alert('Failed to send message. Please check console for details.');
     }
-  };
-
-  const handleCreatePost = async (e) => {
-    e.preventDefault();
-    if (!newContent.trim() || !user) {
-      console.warn('⚠️ Cannot create post: content empty or no user');
-      return;
-    }
-
-    try {
-      console.log('📝 Attempting to create post:', { content: newContent, userId: user._id, chatroomId: selectedCategory._id });
-      const response = await apiCreatePost(selectedCategory._id, newContent.trim());
-      console.log('📝 Create post response:', response);
-      
-      if (response.success) {
-        console.log('✅ Post created successfully');
-        setPosts((prev) => [response.data, ...prev]);
-        setNewContent('');
-        setShowPostModal(false);
-      } else {
-        const errorMsg = response.message || 'Unknown error';
-        console.error('❌ API returned failure:', errorMsg);
-        alert('Failed to create post: ' + errorMsg);
-      }
-    } catch (error) {
-      console.error('❌ Exception while creating post:', error);
-      alert('Failed to create post. Please check console for details.');
-    }
-  };
-
-  const handleLike = async (postId) => {
-    try {
-      const response = await apiLikePost(postId);
-      if (response.success) {
-        setPosts((prev) =>
-          prev.map((post) =>
-            post._id === postId ? { ...post, likeCount: response.data.likeCount, likes: response.data.likes } : post
-          )
-        );
-      }
-    } catch (error) {
-      console.error('Failed to like post:', error);
-    }
-  };
-
-  const handleAddComment = async (postId) => {
-    const text = commentText[postId]?.trim();
-    if (!text || !user) return;
-
-    try {
-      const response = await apiAddComment(postId, text);
-      if (response.success) {
-        setPosts((prev) =>
-          prev.map((post) =>
-            post._id === postId
-              ? {
-                  ...post,
-                  comments: response.data.comments || [],
-                  commentCount: (response.data.comments || []).length
-                }
-              : post
-          )
-        );
-        setCommentText((prev) => ({ ...prev, [postId]: '' }));
-      }
-    } catch (error) {
-      console.error('Failed to add comment:', error);
-    }
-  };
-
-  const formatTime = (date) => {
-    const now = new Date();
-    const diff = now - new Date(date);
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    return `${days}d ago`;
   };
 
   const getInitials = (name) => {
@@ -172,17 +78,23 @@ const ChatRoom = ({ user }) => {
   };
 
   const getUserAvatar = (message) => {
-    // Check if message has user profile photo
     if (message.user?.profilePhoto) {
       return message.user.profilePhoto;
     }
     return null;
   };
 
+  const members = selectedCategory?.members || [];
+
+  const isMemberOnline = (member) => {
+    const memberId = getMemberId(member);
+    return Boolean(member?.isOnline) || (user?._id && memberId?.toString() === user._id.toString());
+  };
+
   return (
     <>
       {!selectedCategory ? (
-        <ChatroomCategories onSelectCategory={setSelectedCategory} />
+        <ChatroomCategories onSelectCategory={setSelectedCategory} user={user} />
       ) : (
         <div className="chat-page">
           <div className="chat-header">
@@ -191,7 +103,7 @@ const ChatRoom = ({ user }) => {
               onClick={() => setSelectedCategory(null)}
               style={{ '--btn-color': selectedCategory.color }}
             >
-              ← Back to Chatrooms
+              Back to Chatrooms
             </button>
             <div>
               <h1>
@@ -202,23 +114,21 @@ const ChatRoom = ({ user }) => {
             </div>
           </div>
 
-          {/* Tab Navigation */}
           <div className="chat-tabs">
             <button
               className={`tab-button ${activeTab === 'chat' ? 'active' : ''}`}
               onClick={() => setActiveTab('chat')}
             >
-              💬 Chat
+              Chat
             </button>
             <button
-              className={`tab-button ${activeTab === 'posts' ? 'active' : ''}`}
-              onClick={() => setActiveTab('posts')}
+              className={`tab-button ${activeTab === 'members' ? 'active' : ''}`}
+              onClick={() => setActiveTab('members')}
             >
-              📌 Posts
+              Members
             </button>
           </div>
 
-          {/* Chat Tab */}
           {activeTab === 'chat' && (
             <>
               <div className="chat-box">
@@ -252,118 +162,24 @@ const ChatRoom = ({ user }) => {
             </>
           )}
 
-          {/* Posts Tab */}
-          {activeTab === 'posts' && (
-            <>
-              <div className="posts-topbar">
-                <button className="create-post-btn" onClick={() => setShowPostModal(true)}>
-                  + Create Post
-                </button>
-              </div>
+          {activeTab === 'members' && (
+            <div className="members-list">
+              <h2>Members</h2>
+              {members.length === 0 ? (
+                <p className="members-empty">No members found.</p>
+              ) : (
+                members.map((member) => {
+                  const memberName = getMemberName(member);
+                  const online = isMemberOnline(member);
 
-              <div className="post-list">
-                {posts.length === 0 ? (
-                  <p className="no-posts">No posts yet. Be the first to share something!</p>
-                ) : (
-                  posts.map((post) => (
-                    <article key={post._id} className="post-card">
-                      <div className="post-header">
-                        <p className="post-author">{post.authorName}</p>
-                        <p className="post-time">{formatTime(post.createdAt)}</p>
-                      </div>
-                      <p className="post-content">{post.content}</p>
-                      <div className="post-footer">
-                        <button onClick={() => handleLike(post._id)} className="like-btn">
-                          ❤️ {post.likeCount || 0}
-                        </button>
-                        <button
-                          onClick={() => setExpandedPost(expandedPost === post._id ? null : post._id)}
-                          className="reply-btn"
-                        >
-                          💬 {post.comments?.length || 0} Replies
-                        </button>
-                      </div>
-
-                      {/* Comments Section */}
-                      {expandedPost === post._id && (
-                        <div className="comments-section">
-                          <div className="comments-list">
-                            {post.comments && post.comments.length > 0 ? (
-                              post.comments.map((comment, idx) => (
-                                <div key={idx} className="comment-item">
-                                  <div className="comment-header">
-                                    <strong className="comment-author">
-                                      {comment.authorName || comment.author?.username || 'Anonymous'}
-                                    </strong>
-                                    <span className="comment-time">{formatTime(comment.createdAt)}</span>
-                                  </div>
-                                  <p className="comment-text">{comment.text}</p>
-                                </div>
-                              ))
-                            ) : (
-                              <p className="no-comments">No replies yet. Be the first to reply!</p>
-                            )}
-                          </div>
-
-                          {/* Comment Input */}
-                          {user && (
-                            <div className="comment-input-area">
-                              <input
-                                type="text"
-                                placeholder="Write a reply..."
-                                className="comment-input"
-                                value={commentText[post._id] || ''}
-                                onChange={(e) =>
-                                  setCommentText((prev) => ({
-                                    ...prev,
-                                    [post._id]: e.target.value
-                                  }))
-                                }
-                                onKeyDown={(e) =>
-                                  e.key === 'Enter' && handleAddComment(post._id)
-                                }
-                              />
-                              <button
-                                className="comment-submit-btn"
-                                onClick={() => handleAddComment(post._id)}
-                              >
-                                Reply
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </article>
-                  ))
-                )}
-              </div>
-            </>
-          )}
-
-          {/* Create Post Modal */}
-          {showPostModal && (
-            <div className="modal-overlay" onClick={() => setShowPostModal(false)}>
-              <div className="modal" onClick={(e) => e.stopPropagation()}>
-                <h2>Create a Post</h2>
-                <form onSubmit={handleCreatePost} className="create-post-form">
-                  <textarea
-                    className="create-textarea"
-                    placeholder="What's on your mind? Ask a question, share an idea, or find study partners..."
-                    value={newContent}
-                    onChange={(e) => setNewContent(e.target.value)}
-                    rows={5}
-                    maxLength={1000}
-                  />
-                  <div className="modal-actions">
-                    <button type="button" className="btn cancel" onClick={() => setShowPostModal(false)}>
-                      Cancel
-                    </button>
-                    <button type="submit" className="btn submit">
-                      Post
-                    </button>
-                  </div>
-                </form>
-              </div>
+                  return (
+                    <div className="member-row" key={getMemberId(member) || memberName}>
+                      <span className={`member-online-dot ${online ? 'online' : ''}`} aria-hidden="true" />
+                      <span className="member-name">{memberName}</span>
+                    </div>
+                  );
+                })
+              )}
             </div>
           )}
         </div>

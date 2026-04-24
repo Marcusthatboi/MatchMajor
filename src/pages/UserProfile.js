@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { getUserSurvey } from '../api/surveys';
+import { sendChatRequest } from '../api/chatRequests';
+import { useUser } from '../context/UserContext';
 import './Profile.css';
 
 const getInitials = (name) => {
@@ -21,9 +23,12 @@ const InfoItem = ({ label, value }) => (
 
 const UserProfile = () => {
   const { userId } = useParams();
+  const location = useLocation();
+  const { user } = useUser();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [requestStatus, setRequestStatus] = useState(null);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -55,6 +60,24 @@ const UserProfile = () => {
 
   const displayName = profile.name || profile.username || 'Student';
   const avatarUrl = profile.profilePhoto || profile.avatar || profile.image || null;
+  const returnTo = location.state?.returnTo || '/posts';
+  const returnLabel = location.state?.returnLabel || 'Back to Posts';
+  const isOwnProfile = user?._id && userId && user._id.toString() === userId.toString();
+
+  const handleSendChatRequest = async () => {
+    try {
+      setRequestStatus('Sending...');
+      const response = await sendChatRequest(userId);
+
+      if (response.success) {
+        setRequestStatus(response.message || 'Chat request sent');
+      } else {
+        setRequestStatus(response.message || 'Could not send chat request');
+      }
+    } catch (requestError) {
+      setRequestStatus(requestError.message || 'Could not send chat request');
+    }
+  };
 
   return (
     <div className="profile-page readonly-profile-page">
@@ -68,7 +91,15 @@ const UserProfile = () => {
         </div>
         <h1>{displayName}</h1>
         <p>Student profile</p>
-        <Link to="/posts" className="profile-secondary-link profile-header-link">Return</Link>
+        <div className="profile-header-actions">
+          <Link to={returnTo} className="profile-secondary-link">{returnLabel}</Link>
+          {!isOwnProfile && (
+            <button type="button" className="profile-chat-request-btn" onClick={handleSendChatRequest}>
+              Request to Chat
+            </button>
+          )}
+        </div>
+        {requestStatus && <p className="profile-request-status">{requestStatus}</p>}
       </div>
 
       <div className="profile-content">
@@ -92,10 +123,12 @@ const UserProfile = () => {
             <h2>Study Preferences</h2>
             <InfoItem label="Current Classes" value={profile.currentClasses || profile.currentCourses} />
             <InfoItem label="Study Goals" value={profile.studyGoals} />
+            <InfoItem label="Honors/Special Programs" value={profile.honors || profile.specialPrograms} />
             <InfoItem label="Study Location" value={profile.studyLocation} />
             <InfoItem label="Study Times" value={profile.studyTimes} />
             <InfoItem label="Ideal Group Size" value={profile.idealGroupSize} />
             <InfoItem label="Format" value={profile.virtualOrInPerson || profile.studyMode} />
+            <InfoItem label="Study Habits" value={profile.studyHabits} />
             <InfoItem label="Study Style" value={profile.studyStyle} />
           </div>
 

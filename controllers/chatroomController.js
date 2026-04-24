@@ -1,12 +1,24 @@
 // server/controllers/chatroomController.js
 const Chatroom = require('../models/Chatroom');
+const Message = require('../models/Message');
+const Post = require('../models/Post');
 const User = require('../models/User');
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+
+const idsMatch = (left, right) => left?.toString() === right?.toString();
 
 // Get all chatrooms (predefined + custom)
 exports.getAllChatrooms = async (req, res) => {
   try {
     console.log('Fetching all chatrooms...');
-    const chatrooms = await Chatroom.find()
+    const chatrooms = await Chatroom.find({
+      $or: [
+        { isDirect: { $ne: true }, isPrivate: { $ne: true } },
+        { isDirect: { $ne: true }, isPrivate: true, members: req.user._id },
+        { isDirect: true, members: req.user._id }
+      ]
+    })
       .populate('creator', 'username')
       .populate('members', 'username')
       .sort('-createdAt');
@@ -30,7 +42,7 @@ exports.getAllChatrooms = async (req, res) => {
 // Create a new chatroom
 exports.createChatroom = async (req, res) => {
   try {
-    const { name, description, color, isPrivate } = req.body;
+    const { name, description, color, isPrivate, password } = req.body;
 
     // Validate authentication
     if (!req.user || !req.user._id) {
@@ -48,7 +60,21 @@ exports.createChatroom = async (req, res) => {
       });
     }
 
+    const shouldBePrivate = Boolean(isPrivate);
+    const normalizedPassword = password?.trim() || '';
+
+    if (shouldBePrivate && normalizedPassword.length < 4) {
+      return res.status(400).json({
+        success: false,
+        message: 'Private chatroom password must be at least 4 characters'
+      });
+    }
+
     console.log('Creating chatroom with data:', { name, description, color, isPrivate, userId: req.user._id });
+
+    const privatePasswordHash = shouldBePrivate
+      ? await bcrypt.hash(normalizedPassword, 10)
+      : null;
 
     // Create new chatroom
     const chatroom = await Chatroom.create({
@@ -60,12 +86,14 @@ exports.createChatroom = async (req, res) => {
       isCustom: true,
       memberCount: 1,
       activeNow: 1,
-      isPrivate: isPrivate || false
+      isPrivate: shouldBePrivate,
+      privatePasswordHash
     });
 
     console.log('Chatroom created successfully:', chatroom);
 
     await chatroom.populate('creator', 'username');
+    chatroom.privatePasswordHash = undefined;
 
     res.status(201).json({
       success: true,
@@ -84,9 +112,27 @@ exports.createChatroom = async (req, res) => {
 // Join a chatroom
 exports.joinChatroom = async (req, res) => {
   try {
-    const { chatroomId } = req.body;
+    const { chatroomId, name, password } = req.body;
 
-    const chatroom = await Chatroom.findById(chatroomId);
+    const normalizedName = name?.trim();
+
+    if (!chatroomId && !normalizedName) {
+      return res.status(400).json({
+        success: false,
+        message: 'Chatroom name is required'
+      });
+    }
+
+    if (chatroomId && !mongoose.Types.ObjectId.isValid(chatroomId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid chatroom ID'
+      });
+    }
+
+    const chatroom = await Chatroom.findOne(
+      chatroomId ? { _id: chatroomId } : { name: normalizedName }
+    ).select('+privatePasswordHash');
     if (!chatroom) {
       return res.status(404).json({
         success: false,
@@ -95,11 +141,24 @@ exports.joinChatroom = async (req, res) => {
     }
 
     // Check if user is already a member
-    if (chatroom.members.includes(req.user._id)) {
+    if (chatroom.members.some(memberId => idsMatch(memberId, req.user._id))) {
       return res.status(400).json({
         success: false,
         message: 'You are already a member of this chatroom'
       });
+    }
+
+    if (chatroom.isPrivate) {
+      const passwordMatches = password && chatroom.privatePasswordHash
+        ? await bcrypt.compare(password, chatroom.privatePasswordHash)
+        : false;
+
+      if (!passwordMatches) {
+        return res.status(403).json({
+          success: false,
+          message: 'Incorrect private chatroom password'
+        });
+      }
     }
 
     // Add user to members
@@ -108,6 +167,7 @@ exports.joinChatroom = async (req, res) => {
     await chatroom.save();
 
     await chatroom.populate('members', 'username');
+    chatroom.privatePasswordHash = undefined;
 
     res.status(200).json({
       success: true,
@@ -156,6 +216,56 @@ exports.leaveChatroom = async (req, res) => {
   }
 };
 
+// Delete a chatroom and its content. Only the creator or an admin can delete.
+exports.deleteChatroom = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid chatroom ID'
+      });
+    }
+
+    const chatroom = await Chatroom.findById(id);
+    if (!chatroom) {
+      return res.status(404).json({
+        success: false,
+        message: 'Chatroom not found'
+      });
+    }
+
+    const isCreator = chatroom.isCreator(req.user._id);
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isCreator && !isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only the chatroom creator can delete this chatroom'
+      });
+    }
+
+    await Promise.all([
+      Message.deleteMany({ chatroom: id }),
+      Post.deleteMany({ chatroom: id }),
+      Chatroom.findByIdAndDelete(id)
+    ]);
+
+    res.status(200).json({
+      success: true,
+      message: 'Chatroom deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error in deleteChatroom:', error.message, error.stack);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
 // Get chatroom details
 exports.getChatroom = async (req, res) => {
   try {
@@ -169,6 +279,13 @@ exports.getChatroom = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Chatroom not found'
+      });
+    }
+
+    if ((chatroom.isDirect || chatroom.isPrivate) && !chatroom.members.some(memberId => idsMatch(memberId, req.user._id))) {
+      return res.status(403).json({
+        success: false,
+        message: 'You are not a member of this private chatroom'
       });
     }
 

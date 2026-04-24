@@ -77,6 +77,23 @@ const chatroomSchema = new mongoose.Schema({
     default: false
   },
 
+  privatePasswordHash: {
+    type: String,
+    default: null,
+    select: false
+  },
+
+  // Direct one-on-one chat created from an accepted profile chat request
+  isDirect: {
+    type: Boolean,
+    default: false
+  },
+
+  directParticipants: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+
   // Archived status
   isArchived: {
     type: Boolean,
@@ -96,6 +113,7 @@ chatroomSchema.index({ isArchived: 1 });
 chatroomSchema.index({ lastMessageAt: -1 });
 chatroomSchema.index({ members: 1 });
 chatroomSchema.index({ createdAt: -1 });
+chatroomSchema.index({ isDirect: 1, directParticipants: 1 });
 
 /**
  * Virtual: Member details (populated)
